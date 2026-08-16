@@ -2,7 +2,13 @@
   "name": "printcraft",
   "version": "0.0.0",
   "private": true,
+  "comment": "The app lives in app/. These root scripts are thin delegations so the gate is legible from the repo root — `cd app && ...` hid the individual gates behind one opaque `verify`, and tooling (and people) reading this file concluded the repo had no lint, typecheck or test at all.",
   "scripts": {
-    "verify": "cd app && npm run verify"
+    "lint": "npm --prefix app run lint",
+    "typecheck": "npm --prefix app run typecheck",
+    "test": "npm --prefix app run test",
+    "verify": "npm --prefix app run verify",
+    "build": "npm --prefix app run build",
+    "dev": "npm --prefix app run dev"
   }
 }
