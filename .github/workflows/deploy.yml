@@ -15,4 +15,9 @@ jobs:
     uses: maonakamoto/fleetcrown/.github/workflows/selfhost-deploy.yml@main
     with:
       app: printcraft
+      # Root has no workspaces and (deliberately) no real dependencies — its
+      # package-lock.json is a trivial 1-package lockfile just so the shared
+      # workflow's root-level `npm ci` has something to install. Skip lockfile
+      # sniffing so a lockfile edit at root can't silently flip this.
+      package-manager: npm
     secrets: inherit
