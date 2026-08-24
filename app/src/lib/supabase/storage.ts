@@ -9,7 +9,9 @@ export async function uploadFile(
   const supabase = createClient()
   const { data, error } = await supabase.storage
     .from(BUCKET)
-    .upload(path, file, { upsert: true })
+    // No upsert: paths are randomly named, so an upload that lands on an
+    // existing object is a collision or an attempt to overwrite, not an edit.
+    .upload(path, file, { upsert: false })
 
   if (error) return { path: '', error: error.message }
   return { path: data.path, error: null }
@@ -20,13 +22,12 @@ export function getImageUrl(path: string): string {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`
 }
 
-export async function deleteFile(path: string): Promise<boolean> {
-  const supabase = createClient()
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .remove([path])
-  return !error
-}
+/**
+ * There is deliberately no delete helper. Removing an object is destructive and
+ * cannot be authorized from the browser, where the anon key is public to every
+ * visitor. If deletion is ever needed, do it server-side with the service-role
+ * client behind the ownership check in lib/api/ownership.ts.
+ */
 
 export function getStoragePath(
   userId: string,
