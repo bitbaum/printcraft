@@ -1,28 +1,19 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use } from 'react'
 import { useSurface } from '@/hooks/useSurface'
 import { useFigures } from '@/hooks/useFigures'
 import { calculateExportDimensions } from '@/lib/domain/export'
 import { getTotalDimensions } from '@/lib/domain/surface'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Download, AlertCircle, ArrowLeft, Check } from 'lucide-react'
+import { Download, AlertCircle, ArrowLeft, Settings2 } from 'lucide-react'
 import Link from 'next/link'
-
-const DPI_OPTIONS = [
-  { value: 150, label: '150 DPI', desc: 'Good for large viewing distance' },
-  { value: 200, label: '200 DPI', desc: 'Recommended for most prints' },
-  { value: 300, label: '300 DPI', desc: 'Maximum quality, large files' },
-]
 
 export default function ExportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: surface } = useSurface(id)
   const { data: figures } = useFigures(id)
-  const [dpi, setDpi] = useState(200)
 
   if (!surface) {
     return (
@@ -41,7 +32,7 @@ export default function ExportPage({ params }: { params: Promise<{ id: string }>
     )
   }
 
-  const exportDims = calculateExportDimensions(surface.panels, dpi, surface.bleed_mm)
+  const exportDims = calculateExportDimensions(surface.panels, surface.dpi_target, surface.bleed_mm)
   const { width_cm, height_cm } = getTotalDimensions(surface.panels)
   const styledCount = figures?.filter(f => f.styled_url).length ?? 0
   const totalCount = figures?.length ?? 0
@@ -76,28 +67,21 @@ export default function ExportPage({ params }: { params: Promise<{ id: string }>
         </div>
       </div>
 
-      {/* DPI Selection */}
+      {/* Resolution — owned by the surface, so the file matches the spec that was signed off */}
       <div className="space-y-4">
         <Label className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Resolution</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          {DPI_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              className={cn(
-                'p-5 rounded-2xl border text-center transition-all duration-300 card-hover',
-                dpi === opt.value
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary/30 glow-selected'
-                  : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
-              )}
-              onClick={() => setDpi(opt.value)}
-            >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <p className="font-medium">{opt.label}</p>
-                {dpi === opt.value && <Check className="h-4 w-4 text-primary" />}
-              </div>
-              <p className="text-xs text-muted-foreground">{opt.desc}</p>
-            </button>
-          ))}
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-2xl font-light">{surface.dpi_target} DPI</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Set with the surface — the export uses this exact target.
+            </p>
+          </div>
+          <Link href={`/project/${id}/surface`}>
+            <Button variant="outline" size="sm" className="rounded-full">
+              <Settings2 className="h-4 w-4 mr-2" /> Change on Surface
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -133,16 +117,17 @@ export default function ExportPage({ params }: { params: Promise<{ id: string }>
         </div>
       )}
 
-      <a href={`/project/${id}/compose`}>
+      <Link href={`/project/${id}/compose`}>
         <Button className="w-full h-13 text-base font-medium rounded-2xl" size="lg">
           <Download className="h-5 w-5 mr-2" />
-          Go to Compose to Export PNG
+          Export {surface.dpi_target} DPI PNG in Compose
         </Button>
-      </a>
+      </Link>
 
       <p className="text-xs text-muted-foreground text-center leading-relaxed">
-        Use the &quot;Export PNG&quot; button in the Compose toolbar to download your composition.
-        Per-panel splitting at exact DPI will be available in Phase 2.
+        The Compose toolbar renders the full artwork at {surface.dpi_target} DPI without the seam and
+        dead-zone guides, and tells you the exact pixel size it produced. Splitting that file into
+        separate per-panel prints is still done by hand.
       </p>
     </div>
   )

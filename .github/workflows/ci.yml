@@ -42,7 +42,7 @@ jobs:
         run: npm ci
 
       # SSOT: "verified" is defined ONCE, in app/package.json `verify`
-      # (= lint + typecheck; this repo has no test suite), and run identically
+      # (= lint + typecheck + test), and run identically
       # here and locally via `npm run verify`. Change the checks in one place.
       - name: Verify
         run: npm run verify

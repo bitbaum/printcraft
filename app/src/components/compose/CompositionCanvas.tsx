@@ -19,6 +19,7 @@ interface CompositionCanvasProps {
 
 export function CompositionCanvas({ projectId, figures, surface }: CompositionCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null)
+  const overlayRef = useRef<Konva.Layer>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 })
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -139,8 +140,8 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
                 ))}
             </Layer>
 
-            {/* Constraint overlays */}
-            <Layer listening={false}>
+            {/* Constraint overlays — editor guides, hidden during export */}
+            <Layer ref={overlayRef} listening={false}>
               {/* Seam lines */}
               {surface.seam_positions.map((seam, i) => {
                 const x = (seam.x_cm / width_cm) * containerSize.width
@@ -210,8 +211,10 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
         <div className="flex justify-center">
           <CanvasToolbar
             stageRef={stageRef}
+            overlayRef={overlayRef}
             selectedId={selectedId}
             figures={figures}
+            surface={surface}
             projectId={projectId}
             onBackgroundUpload={(file) => {
               const url = URL.createObjectURL(file)
