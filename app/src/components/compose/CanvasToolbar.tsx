@@ -4,7 +4,8 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowUp, ArrowDown, Download, ImagePlus } from 'lucide-react'
 import { useUpdateFigure } from '@/hooks/useFigures'
-import { calculateExportDimensions, resolveExportScale } from '@/lib/domain/export'
+import { getPanelExportRegions, resolveExportScale } from '@/lib/domain/export'
+import { renderPanels, type PanelFile } from '@/lib/export/stage-export'
 import { toast } from 'sonner'
 import type { Figure, Surface } from '@/types/database'
 import type Konva from 'konva'
@@ -25,6 +26,8 @@ interface CanvasToolbarProps {
  *  that actually applies depends on the browser and the machine's memory. */
 const BROWSER_RETRY_FACTOR = 0.6
 const MAX_EXPORT_ATTEMPTS = 4
+/** Browsers drop downloads fired back to back; give each one room to start. */
+const DOWNLOAD_GAP_MS = 400
 
 export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surface, projectId, onBackgroundUpload }: CanvasToolbarProps) {
   const bgInputRef = useRef<HTMLInputElement>(null)
@@ -38,10 +41,14 @@ export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surfa
     updateFigure.mutate({ id: selectedFigure.id, data: { z_depth: newDepth } })
   }
 
-  function downloadBlob(blob: Blob, dpi: number) {
-    const url = URL.createObjectURL(blob)
+  function downloadPanel(file: PanelFile, panelCount: number, dpi: number) {
+    const url = URL.createObjectURL(file.blob)
+    const name =
+      panelCount > 1
+        ? `printcraft-panel-${file.index + 1}of${panelCount}-${dpi}dpi.png`
+        : `printcraft-composition-${dpi}dpi.png`
     const link = document.createElement('a')
-    link.download = `printcraft-composition-${dpi}dpi.png`
+    link.download = name
     link.href = url
     link.click()
     URL.revokeObjectURL(url)
@@ -51,11 +58,31 @@ export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surfa
     const stage = stageRef.current
     if (!stage || isExporting) return
 
-    const target = calculateExportDimensions(surface.panels, surface.dpi_target, surface.bleed_mm)
+    // One sheet per physical panel — that is what gets printed and trimmed.
+    const regions = getPanelExportRegions({
+      panels: surface.panels,
+      bleedMm: surface.bleed_mm,
+      dpi: surface.dpi_target,
+      stageWidth: stage.width(),
+      stageHeight: stage.height(),
+    })
+
+    if (regions.length === 0) {
+      toast.error('The canvas has not been measured yet — try again in a moment.')
+      return
+    }
+
+    // Every sheet has to come out at the same DPI, so the largest panel sets
+    // the scale for all of them.
+    const binding = regions.reduce((widest, region) =>
+      Math.max(region.stage.width, region.stage.height) > Math.max(widest.stage.width, widest.stage.height)
+        ? region
+        : widest
+    )
     const scaleArgs = {
-      canvasWidth: stage.width(),
-      canvasHeight: stage.height(),
-      targetWidthPx: target.total_width_px,
+      canvasWidth: binding.stage.width,
+      canvasHeight: binding.stage.height,
+      targetWidthPx: binding.output.width_px,
       targetDpi: surface.dpi_target,
     }
 
@@ -67,36 +94,37 @@ export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surfa
 
     try {
       let scale = resolveExportScale(scaleArgs)
-      let blob: Blob | null = null
+      let files: PanelFile[] | null = null
 
-      for (let attempt = 0; attempt < MAX_EXPORT_ATTEMPTS && !blob; attempt++) {
+      for (let attempt = 0; attempt < MAX_EXPORT_ATTEMPTS && !files; attempt++) {
         if (attempt > 0) {
           scale = resolveExportScale({
             ...scaleArgs,
             maxPixelRatio: scale.pixelRatio * BROWSER_RETRY_FACTOR,
           })
         }
-        try {
-          blob = (await stage.toBlob({ pixelRatio: scale.pixelRatio })) as Blob | null
-        } catch {
-          blob = null
-        }
+        files = await renderPanels(stage, regions, scale.pixelRatio)
       }
 
-      if (!blob) {
+      if (!files) {
         toast.error('Export failed — your browser could not allocate a canvas this large.')
         return
       }
 
-      downloadBlob(blob, scale.dpi)
+      for (const [i, file] of files.entries()) {
+        if (i > 0) await new Promise(resolve => setTimeout(resolve, DOWNLOAD_GAP_MS))
+        downloadPanel(file, files.length, scale.dpi)
+      }
 
-      const size = `${scale.width_px} x ${scale.height_px} px`
-      if (scale.limitedBy === 'none') {
-        toast.success(`Print-ready PNG — ${size} at ${scale.dpi} DPI`)
-      } else {
+      if (scale.limitedBy !== 'none') {
         toast.warning(
-          `Exported at ${scale.dpi} DPI (${size}) — under the ${surface.dpi_target} DPI target because your browser caps canvas size.`
+          `Exported at ${scale.dpi} DPI — under the ${surface.dpi_target} DPI target because your browser caps canvas size.`
         )
+      } else if (files.length > 1) {
+        toast.success(`Print-ready — ${files.length} panel files at ${scale.dpi} DPI, bleed included`)
+      } else {
+        const size = `${Math.round(binding.stage.width * scale.pixelRatio)} x ${Math.round(binding.stage.height * scale.pixelRatio)} px`
+        toast.success(`Print-ready PNG — ${size} at ${scale.dpi} DPI`)
       }
     } finally {
       overlayRef.current?.show()

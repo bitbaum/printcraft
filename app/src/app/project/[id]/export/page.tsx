@@ -34,6 +34,7 @@ export default function ExportPage({ params }: { params: Promise<{ id: string }>
 
   const exportDims = calculateExportDimensions(surface.panels, surface.dpi_target, surface.bleed_mm)
   const { width_cm, height_cm } = getTotalDimensions(surface.panels)
+  const panelCount = surface.panels.length
   const styledCount = figures?.filter(f => f.styled_url).length ?? 0
   const totalCount = figures?.length ?? 0
 
@@ -92,12 +93,14 @@ export default function ExportPage({ params }: { params: Promise<{ id: string }>
         </div>
         <div className="p-6 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total image</span>
+            <span className="text-muted-foreground">Full artwork</span>
             <span className="font-mono">{exportDims.total_width_px} x {exportDims.total_height_px} px</span>
           </div>
           {exportDims.panels.map(panel => (
             <div key={panel.index} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Panel {panel.index + 1}</span>
+              <span className="text-muted-foreground">
+                {exportDims.panels.length > 1 ? `Panel ${panel.index + 1} file` : 'File'}
+              </span>
               <span className="font-mono">{panel.width_px} x {panel.height_px} px</span>
             </div>
           ))}
@@ -120,14 +123,14 @@ export default function ExportPage({ params }: { params: Promise<{ id: string }>
       <Link href={`/project/${id}/compose`}>
         <Button className="w-full h-13 text-base font-medium rounded-2xl" size="lg">
           <Download className="h-5 w-5 mr-2" />
-          Export {surface.dpi_target} DPI PNG in Compose
+          Export {panelCount > 1 ? `${panelCount} panels` : 'PNG'} at {surface.dpi_target} DPI in Compose
         </Button>
       </Link>
 
       <p className="text-xs text-muted-foreground text-center leading-relaxed">
-        The Compose toolbar renders the full artwork at {surface.dpi_target} DPI without the seam and
-        dead-zone guides, and tells you the exact pixel size it produced. Splitting that file into
-        separate per-panel prints is still done by hand.
+        {panelCount > 1
+          ? `The Compose toolbar downloads one file per panel at ${surface.dpi_target} DPI, each with ${surface.bleed_mm}mm bleed and no seam or dead-zone guides. Bleed at a seam is taken from the neighbouring panel, so the scene stays continuous across the glass.`
+          : `The Compose toolbar downloads the artwork at ${surface.dpi_target} DPI with ${surface.bleed_mm}mm bleed and no seam or dead-zone guides.`}
       </p>
     </div>
   )

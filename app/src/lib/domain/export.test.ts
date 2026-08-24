@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   calculateExportDimensions,
   resolveExportScale,
+  getPanelExportRegions,
   MAX_CANVAS_DIMENSION_PX,
 } from './export'
 import { SURFACE_PRESETS } from '@/lib/config/surface-presets'
@@ -151,5 +152,128 @@ describe('calculateExportDimensions', () => {
     }
     // Panel 2 starts where panel 1's physical edge is, not at zero.
     expect(dims.panels[1].x_px).toBe(Math.round((duschwand.panels[0].width_cm / 2.54) * duschwand.dpi_target))
+  })
+})
+
+describe('getPanelExportRegions', () => {
+  // The composition canvas keeps the surface aspect ratio, so a stage unit is a
+  // fixed number of cm on both axes.
+  const stageFor = (widthCm: number, heightCm: number, stageWidth: number) => ({
+    stageWidth,
+    stageHeight: stageWidth * (heightCm / widthCm),
+  })
+
+  it('gives every panel its own sheet at the target DPI', () => {
+    const regions = getPanelExportRegions({
+      panels: duschwand.panels,
+      bleedMm: duschwand.bleed_mm,
+      dpi: duschwand.dpi_target,
+      ...stageFor(197, 190, 900),
+    })
+
+    expect(regions).toHaveLength(2)
+    for (const [i, region] of regions.entries()) {
+      const panelWidthCm = duschwand.panels[i].width_cm + duschwand.bleed_mm / 5
+      expect(region.output.width_px).toBe(Math.round((panelWidthCm / 2.54) * duschwand.dpi_target))
+      expect(region.output.height_px).toBe(Math.round((190.6 / 2.54) * duschwand.dpi_target))
+    }
+  })
+
+  it('keeps every panel under the canvas ceiling that the whole wall approaches', () => {
+    const regions = getPanelExportRegions({
+      panels: duschwand.panels,
+      bleedMm: duschwand.bleed_mm,
+      dpi: duschwand.dpi_target,
+      ...stageFor(197, 190, 900),
+    })
+
+    const whole = calculateExportDimensions(duschwand.panels, duschwand.dpi_target, duschwand.bleed_mm)
+    const panelArea = Math.max(...regions.map(r => r.output.width_px * r.output.height_px))
+
+    expect(panelArea).toBeLessThan(whole.total_width_px * whole.total_height_px)
+    for (const region of regions) {
+      expect(region.output.width_px).toBeLessThanOrEqual(MAX_CANVAS_DIMENSION_PX)
+      expect(region.output.height_px).toBeLessThanOrEqual(MAX_CANVAS_DIMENSION_PX)
+    }
+  })
+
+  it('takes the bleed at a seam from the neighbouring panel, so the scene stays continuous', () => {
+    const { stageWidth, stageHeight } = stageFor(197, 190, 900)
+    const regions = getPanelExportRegions({
+      panels: duschwand.panels,
+      bleedMm: duschwand.bleed_mm,
+      dpi: duschwand.dpi_target,
+      stageWidth,
+      stageHeight,
+    })
+
+    // The inner edges sit inside the artwork: real pixels, nothing to invent.
+    expect(regions[0].outside.right).toBe(0)
+    expect(regions[1].outside.left).toBe(0)
+    // And the two crops overlap by exactly two bleeds across the seam.
+    const overlap = regions[0].stage.x + regions[0].stage.width - regions[1].stage.x
+    const bleedInStageUnits = (duschwand.bleed_mm / 10) * (stageWidth / 197)
+    expect(overlap).toBeCloseTo(bleedInStageUnits * 2, 6)
+  })
+
+  it('flags the outer edges, where bleed has no artwork behind it', () => {
+    const { stageWidth, stageHeight } = stageFor(197, 190, 900)
+    const regions = getPanelExportRegions({
+      panels: duschwand.panels,
+      bleedMm: duschwand.bleed_mm,
+      dpi: duschwand.dpi_target,
+      stageWidth,
+      stageHeight,
+    })
+    const bleedInStageUnits = (duschwand.bleed_mm / 10) * (stageWidth / 197)
+
+    expect(regions[0].outside.left).toBeCloseTo(bleedInStageUnits, 6)
+    expect(regions[1].outside.right).toBeCloseTo(bleedInStageUnits, 6)
+    for (const region of regions) {
+      expect(region.outside.top).toBeGreaterThan(0)
+      expect(region.outside.bottom).toBeGreaterThan(0)
+    }
+  })
+
+  it('sits a shorter panel on the bottom edge, where it physically stands', () => {
+    const regions = getPanelExportRegions({
+      panels: [{ width_cm: 100, height_cm: 200 }, { width_cm: 100, height_cm: 150 }],
+      bleedMm: 0,
+      dpi: 200,
+      stageWidth: 200,
+      stageHeight: 200,
+    })
+
+    expect(regions[0].stage.y).toBe(0)
+    expect(regions[0].stage.height).toBe(200)
+    // 50cm shorter on a 200cm surface drawn 200 units tall -> starts 50 units down.
+    expect(regions[1].stage.y).toBe(50)
+    expect(regions[1].stage.height).toBe(150)
+  })
+
+  it('covers the whole artwork with no gap between panels', () => {
+    const regions = getPanelExportRegions({
+      panels: [{ width_cm: 50, height_cm: 100 }, { width_cm: 50, height_cm: 100 }],
+      bleedMm: 0,
+      dpi: 200,
+      stageWidth: 100,
+      stageHeight: 100,
+    })
+
+    expect(regions[0].stage.x).toBe(0)
+    expect(regions[0].stage.x + regions[0].stage.width).toBe(regions[1].stage.x)
+    expect(regions[1].stage.x + regions[1].stage.width).toBe(100)
+  })
+
+  it('returns nothing rather than a broken crop for an unmeasured stage', () => {
+    expect(
+      getPanelExportRegions({
+        panels: duschwand.panels,
+        bleedMm: 3,
+        dpi: 200,
+        stageWidth: 0,
+        stageHeight: 0,
+      })
+    ).toEqual([])
   })
 })
