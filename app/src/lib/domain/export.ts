@@ -95,3 +95,71 @@ export function resolveExportScale(params: {
     limitedBy,
   }
 }
+
+export interface PanelExportRegion {
+  index: number
+  /**
+   * Crop rectangle in stage coordinates. It deliberately reaches outside the
+   * stage wherever bleed has no artwork behind it — on inner edges the bleed
+   * is real neighbouring content, which is what keeps a scene continuous
+   * across a glass seam.
+   */
+  stage: { x: number; y: number; width: number; height: number }
+  /** Size of the printed file at the surface's target DPI. */
+  output: { width_px: number; height_px: number }
+  /** Stage units of each edge that fall outside the artwork and have no pixels behind them. */
+  outside: { left: number; top: number; right: number; bottom: number }
+}
+
+/**
+ * One crop rectangle per physical panel. Each panel is printed and trimmed as
+ * its own sheet (Ground Truth #5), so each needs its own bleed — and cropping
+ * per panel is also what keeps a 2m wall under the browser's canvas ceiling,
+ * since no single file has to hold the whole surface.
+ *
+ * Panel y-origin is the bottom edge, matching how dead zones are placed.
+ */
+export function getPanelExportRegions(params: {
+  panels: Panel[]
+  bleedMm: number
+  dpi: number
+  stageWidth: number
+  stageHeight: number
+}): PanelExportRegion[] {
+  const { panels, bleedMm, dpi, stageWidth, stageHeight } = params
+  const total = getTotalDimensions(panels)
+
+  if (stageWidth <= 0 || stageHeight <= 0 || total.width_cm <= 0 || total.height_cm <= 0) {
+    return []
+  }
+
+  const bleedCm = bleedMm / 10
+  const unitsPerCmX = stageWidth / total.width_cm
+  const unitsPerCmY = stageHeight / total.height_cm
+
+  return getPanelBounds(panels).map((bounds, index) => {
+    const widthCm = bounds.width_cm + bleedCm * 2
+    const heightCm = bounds.height_cm + bleedCm * 2
+
+    const x = (bounds.x_cm - bleedCm) * unitsPerCmX
+    // Panels sit on the bottom edge; a shorter panel leaves the gap at the top.
+    const y = (total.height_cm - bounds.height_cm - bleedCm) * unitsPerCmY
+    const width = widthCm * unitsPerCmX
+    const height = heightCm * unitsPerCmY
+
+    return {
+      index,
+      stage: { x, y, width, height },
+      output: {
+        width_px: cmToPixels(widthCm, dpi),
+        height_px: cmToPixels(heightCm, dpi),
+      },
+      outside: {
+        left: Math.max(0, -x),
+        top: Math.max(0, -y),
+        right: Math.max(0, x + width - stageWidth),
+        bottom: Math.max(0, y + height - stageHeight),
+      },
+    }
+  })
+}
