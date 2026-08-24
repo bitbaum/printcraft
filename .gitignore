@@ -54,3 +54,6 @@ yarn-error.log*
 
 # Playwright MCP session scratch
 .playwright-mcp/
+
+# Per-session agent worktrees — scratch, never part of the repo.
+.claude/worktrees/
