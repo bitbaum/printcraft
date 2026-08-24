@@ -4,10 +4,12 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { Stage, Layer, Rect, Line } from 'react-konva'
 import { FigureLayer } from './FigureLayer'
 import { CanvasToolbar } from './CanvasToolbar'
-import { getTotalDimensions } from '@/lib/domain/surface'
+import { getTotalDimensions, SEAM_BUFFER_CM } from '@/lib/domain/surface'
+import type { PlacementViolation } from '@/lib/domain/surface'
 import { useUpdateFigure } from '@/hooks/useFigures'
 import { getImageUrl } from '@/lib/supabase/storage'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import type { Figure, Surface } from '@/types/database'
 import type Konva from 'konva'
 
@@ -56,6 +58,14 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
   const handleScaleChange = useCallback((figureId: string, scale: number) => {
     updateFigure.mutate({ id: figureId, data: { scale } })
   }, [updateFigure])
+
+  const handleBlocked = useCallback((violation: PlacementViolation) => {
+    toast.info(
+      violation.kind === 'dead-zone'
+        ? `Kept clear of ${violation.reason} — artwork there would be covered up.`
+        : 'Kept off the glass seam — a figure across the joint gets cut in half.'
+    )
+  }, [])
 
   const placedFigures = figures.filter(f => imageUrls[f.id])
 
@@ -132,10 +142,13 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
                     canvasHeight={containerSize.height}
                     totalWidthCm={width_cm}
                     totalHeightCm={height_cm}
+                    deadZones={surface.dead_zones}
+                    seams={surface.seam_positions}
                     isSelected={selectedId === figure.id}
                     onSelect={() => setSelectedId(figure.id)}
                     onDragEnd={handleDragEnd}
                     onScaleChange={handleScaleChange}
+                    onBlocked={handleBlocked}
                   />
                 ))}
             </Layer>
@@ -179,9 +192,8 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
 
               {/* Seam buffer zones */}
               {surface.seam_positions.map((seam, i) => {
-                const bufferCm = 10
-                const x = ((seam.x_cm - bufferCm) / width_cm) * containerSize.width
-                const w = (bufferCm * 2 / width_cm) * containerSize.width
+                const x = ((seam.x_cm - SEAM_BUFFER_CM) / width_cm) * containerSize.width
+                const w = ((SEAM_BUFFER_CM * 2) / width_cm) * containerSize.width
                 return (
                   <Rect
                     key={`buffer-${i}`}

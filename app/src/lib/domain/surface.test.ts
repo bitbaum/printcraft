@@ -18,6 +18,9 @@ import {
   getSeamPositionsFromPanels,
   getTotalDimensions,
   isInDeadZone,
+  checkPlacement,
+  canvasRectToSurfaceCm,
+  SEAM_BUFFER_CM,
   isNearSeam,
   pixelsToCm,
 } from './surface'
@@ -186,5 +189,114 @@ describe('cm <-> pixel conversion', () => {
     const { width_cm, height_cm } = getTotalDimensions(SURFACE_PRESETS[0].panels)
     expect(cmToPixels(width_cm, 200)).toBe(15512)
     expect(cmToPixels(height_cm, 200)).toBe(14961)
+  })
+})
+
+
+/**
+ * The rule above was implemented and tested, then called by nothing: the editor
+ * drew the red zones as decoration and let any figure sit on top of them. These
+ * cover the wiring — the rule the canvas actually asks, and the frame change it
+ * has to make first.
+ */
+describe('checkPlacement', () => {
+  const fixture = { x_cm: 18.75, y_cm: 0, width_cm: 40, height_cm: 45, reason: 'Dusch Armatur' }
+  const seams = [{ x_cm: 77.5 }]
+
+  it('lets a figure stand on clear glass', () => {
+    expect(
+      checkPlacement({
+        rect: { x_cm: 100, y_cm: 60, width_cm: 30, height_cm: 80 },
+        deadZones: [fixture],
+        seams,
+      })
+    ).toBeNull()
+  })
+
+  it('names the fixture a figure would be lost behind', () => {
+    expect(
+      checkPlacement({
+        rect: { x_cm: 20, y_cm: 10, width_cm: 30, height_cm: 40 },
+        deadZones: [fixture],
+        seams: [],
+      })
+    ).toEqual({ kind: 'dead-zone', reason: 'Dusch Armatur' })
+  })
+
+  it('refuses the seam band, where a face would be cut in half', () => {
+    const violation = checkPlacement({
+      rect: { x_cm: 70, y_cm: 100, width_cm: 20, height_cm: 40 },
+      deadZones: [],
+      seams,
+    })
+
+    expect(violation?.kind).toBe('seam')
+  })
+
+  it('reports the dead zone first when a figure breaks both rules', () => {
+    // Overlaps the fixture AND reaches into the seam band.
+    const violation = checkPlacement({
+      rect: { x_cm: 40, y_cm: 10, width_cm: 40, height_cm: 40 },
+      deadZones: [fixture],
+      seams,
+    })
+
+    expect(violation).toEqual({ kind: 'dead-zone', reason: 'Dusch Armatur' })
+  })
+
+  it('honours the buffer the editor draws', () => {
+    const justOutside = checkPlacement({
+      rect: { x_cm: 77.5 - SEAM_BUFFER_CM - 5, y_cm: 100, width_cm: 5, height_cm: 40 },
+      deadZones: [],
+      seams,
+    })
+    const justInside = checkPlacement({
+      rect: { x_cm: 77.5 - SEAM_BUFFER_CM + 1, y_cm: 100, width_cm: 5, height_cm: 40 },
+      deadZones: [],
+      seams,
+    })
+
+    expect(justOutside).toBeNull()
+    expect(justInside?.kind).toBe('seam')
+  })
+})
+
+describe('canvasRectToSurfaceCm', () => {
+  const canvas = { canvasWidth: 200, canvasHeight: 100, totalWidthCm: 400, totalHeightCm: 200 }
+
+  it('converts a centred figure to its footprint on the surface', () => {
+    expect(
+      canvasRectToSurfaceCm({ centerXPx: 100, centerYPx: 50, widthPx: 20, heightPx: 10, ...canvas })
+    ).toEqual({ x_cm: 180, y_cm: 90, width_cm: 40, height_cm: 20 })
+  })
+
+  it('flips y: the top of the canvas is the top of the wall, not the bottom', () => {
+    // A figure hugging the top of the canvas stands high on the wall.
+    const high = canvasRectToSurfaceCm({ centerXPx: 100, centerYPx: 5, widthPx: 20, heightPx: 10, ...canvas })
+    // One hugging the bottom of the canvas sits on the floor.
+    const low = canvasRectToSurfaceCm({ centerXPx: 100, centerYPx: 95, widthPx: 20, heightPx: 10, ...canvas })
+
+    // y_cm is the figure's bottom edge: a 20cm-tall figure whose top touches
+    // the 200cm ceiling stands with its feet at 180cm.
+    expect(high.y_cm).toBe(180)
+    expect(high.y_cm + high.height_cm).toBe(200)
+    expect(low.y_cm).toBe(0)
+  })
+
+  it('catches a figure over the shower fixture, which sits low on the wall', () => {
+    const duschwand = { canvasWidth: 197, canvasHeight: 190, totalWidthCm: 197, totalHeightCm: 190 }
+    const fixture = { x_cm: 18.75, y_cm: 0, width_cm: 40, height_cm: 45, reason: 'Dusch Armatur' }
+
+    // Near the BOTTOM of the canvas -> low on the wall -> over the fixture.
+    const overFixture = canvasRectToSurfaceCm({
+      centerXPx: 38, centerYPx: 170, widthPx: 30, heightPx: 40, ...duschwand,
+    })
+    // Same column, near the TOP of the canvas -> high on the wall -> clear.
+    const aboveFixture = canvasRectToSurfaceCm({
+      centerXPx: 38, centerYPx: 30, widthPx: 30, heightPx: 40, ...duschwand,
+    })
+
+    expect(checkPlacement({ rect: overFixture, deadZones: [fixture], seams: [] })?.kind).toBe('dead-zone')
+    expect(checkPlacement({ rect: aboveFixture, deadZones: [fixture], seams: [] })).toBeNull()
   })
 })
