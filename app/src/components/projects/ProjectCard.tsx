@@ -5,17 +5,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Trash2, Palette, ArrowUpRight } from 'lucide-react'
+import { deriveProjectProgress } from '@/lib/domain/project-progress'
 import type { Project } from '@/types/database'
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  uploading: 'Uploading',
-  generating: 'Generating',
-  composing: 'Composing',
-  previewing: 'Previewing',
-  exported: 'Exported',
-  printed: 'Printed',
-}
 
 interface ProjectCardProps {
   project: Project
@@ -23,6 +14,15 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, onDelete }: ProjectCardProps) {
+  // project.status is never written by anything in the app, so it always read
+  // 'Draft'. The rows say where the project actually is.
+  const progress = deriveProjectProgress({
+    figureCount: project.figures?.length ?? 0,
+    hasStyle: !!project.style_id,
+    hasSurface: (project.surfaces?.length ?? 0) > 0,
+    hasComposition: (project.compositions?.length ?? 0) > 0,
+  })
+
   return (
     <Card className="group relative overflow-hidden rounded-2xl border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 card-hover">
       <Link href={`/project/${project.id}/figures`} className="block">
@@ -46,7 +46,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
           <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs font-normal rounded-full px-3">
-                {STATUS_LABELS[project.status] ?? project.status}
+                {progress.label}
               </Badge>
               {project.style && (
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">

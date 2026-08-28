@@ -26,6 +26,9 @@ export interface Project {
   style?: Style | null
   surface?: Surface | null
   figures?: Figure[]
+  // Existence probes for progress — ids only, see GET /api/projects.
+  surfaces?: { id: string }[]
+  compositions?: { id: string }[]
 }
 
 export type ProjectStatus =
