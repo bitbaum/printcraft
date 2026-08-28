@@ -7,6 +7,8 @@ import { CanvasToolbar } from './CanvasToolbar'
 import { getTotalDimensions, SEAM_BUFFER_CM } from '@/lib/domain/surface'
 import type { PlacementViolation } from '@/lib/domain/surface'
 import { useUpdateFigure } from '@/hooks/useFigures'
+import { useComposition, useSaveComposition } from '@/hooks/useComposition'
+import { useSupabaseUpload } from '@/hooks/useSupabaseUpload'
 import { getImageUrl } from '@/lib/supabase/storage'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -25,8 +27,15 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 })
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null)
+  const [loadedBg, setLoadedBg] = useState<{ path: string; image: HTMLImageElement } | null>(null)
+  const [bgUploading, setBgUploading] = useState(false)
   const updateFigure = useUpdateFigure(projectId)
+  // The background is the scene itself. Held only in memory it vanished on
+  // refresh, and the export then silently printed a black wall.
+  const { data: composition, isLoading: compositionLoading } = useComposition(projectId)
+  const saveComposition = useSaveComposition(projectId)
+  const { upload } = useSupabaseUpload(projectId)
+  const backgroundPath = composition?.background_url ?? null
 
   const { width_cm, height_cm } = getTotalDimensions(surface.panels)
   const aspectRatio = width_cm / height_cm
@@ -43,6 +52,48 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
     window.addEventListener('resize', resize)
     return () => window.removeEventListener('resize', resize)
   }, [aspectRatio])
+
+  // Restore the saved background. crossOrigin is what keeps the Konva stage
+  // untainted, so the export can still read pixels back out of it.
+  useEffect(() => {
+    if (!backgroundPath) return
+    let cancelled = false
+    const img = new window.Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      if (!cancelled) setLoadedBg({ path: backgroundPath, image: img })
+    }
+    img.onerror = () => {
+      if (!cancelled) toast.error('The saved background could not be loaded.')
+    }
+    img.src = getImageUrl(backgroundPath)
+    return () => {
+      cancelled = true
+    }
+  }, [backgroundPath])
+
+  // Derived, not stored: a background that no longer matches the saved path is
+  // a stale image, and painting it would export a scene the project dropped.
+  const bgImage = loadedBg?.path === backgroundPath ? loadedBg.image : null
+
+  const handleBackgroundUpload = useCallback(
+    async (file: File) => {
+      setBgUploading(true)
+      const result = await upload(file, 'backgrounds')
+      setBgUploading(false)
+      if (!result) {
+        toast.error('Background upload failed — nothing was saved.')
+        return
+      }
+      // Only the background is stored here. Figure placement lives on the
+      // figures rows, and duplicating it into layout would give it two homes.
+      saveComposition.mutate(
+        { project_id: projectId, background_url: result.path },
+        { onError: (err) => toast.error(err.message) }
+      )
+    },
+    [upload, saveComposition, projectId]
+  )
 
   // Build image URLs (synchronous — public bucket)
   const imageUrls: Record<string, string> = {}
@@ -228,12 +279,10 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
             figures={figures}
             surface={surface}
             projectId={projectId}
-            onBackgroundUpload={(file) => {
-              const url = URL.createObjectURL(file)
-              const img = new window.Image()
-              img.onload = () => setBgImage(img)
-              img.src = url
-            }}
+            backgroundPending={
+              bgUploading || compositionLoading || (!!backgroundPath && !bgImage)
+            }
+            onBackgroundUpload={handleBackgroundUpload}
           />
         </div>
       </div>
