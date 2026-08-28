@@ -7,7 +7,9 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('projects')
-    .select('*, style:styles(*)')
+    // Ids only, and in one round trip: the dashboard badge reports progress
+    // from these rows rather than from a status column nothing ever wrote.
+    .select('*, style:styles(*), figures(id), surfaces(id), compositions(id)')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false })
 

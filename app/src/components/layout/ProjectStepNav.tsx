@@ -7,28 +7,36 @@ import { Users, Palette, Ruler, Layers, Download, Check, ArrowLeft } from 'lucid
 import { useProject } from '@/hooks/useProject'
 import { useFigures } from '@/hooks/useFigures'
 import { useSurface } from '@/hooks/useSurface'
+import { useComposition } from '@/hooks/useComposition'
+import { PROJECT_STEPS, type ProjectStepId } from '@/lib/config/project-steps'
+import { deriveProjectProgress } from '@/lib/domain/project-progress'
 
-const STEPS = [
-  { id: 'figures', label: 'Figures', icon: Users, href: 'figures' },
-  { id: 'style', label: 'Style', icon: Palette, href: 'style' },
-  { id: 'surface', label: 'Surface', icon: Ruler, href: 'surface' },
-  { id: 'compose', label: 'Compose', icon: Layers, href: 'compose' },
-  { id: 'export', label: 'Export', icon: Download, href: 'export' },
-]
+/** Icons are the only per-step thing the nav owns; the steps themselves are config. */
+const STEP_ICONS: Record<ProjectStepId, typeof Users> = {
+  figures: Users,
+  style: Palette,
+  surface: Ruler,
+  compose: Layers,
+  export: Download,
+}
 
 export function ProjectStepNav({ projectId }: { projectId: string }) {
   const pathname = usePathname()
   const { data: project } = useProject(projectId)
   const { data: figures } = useFigures(projectId)
   const { data: surface } = useSurface(projectId)
+  const { data: composition } = useComposition(projectId)
 
-  const completedSteps = new Set<string>()
-  if (figures && figures.length > 0) completedSteps.add('figures')
-  if (project?.style_id) completedSteps.add('style')
-  if (surface) completedSteps.add('surface')
-  if (figures?.some(f => f.styled_url)) completedSteps.add('compose')
+  // Same derivation the dashboard badge uses, so the two cannot disagree.
+  const { completed } = deriveProjectProgress({
+    figureCount: figures?.length ?? 0,
+    hasStyle: !!project?.style_id,
+    hasSurface: !!surface,
+    hasComposition: !!composition,
+  })
+  const completedSteps = new Set<ProjectStepId>(completed)
 
-  const activeIndex = STEPS.findIndex(s => pathname.endsWith(`/${s.href}`))
+  const activeIndex = PROJECT_STEPS.findIndex(s => pathname.endsWith(`/${s.href}`))
 
   return (
     <nav className="border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
@@ -46,11 +54,12 @@ export function ProjectStepNav({ projectId }: { projectId: string }) {
 
         {/* Steps — horizontally scrollable on mobile */}
         <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none -mx-1 px-1">
-          {STEPS.map((step, i) => {
+          {PROJECT_STEPS.map((step, i) => {
             const href = `/project/${projectId}/${step.href}`
             const isActive = pathname.endsWith(`/${step.href}`)
             const isComplete = completedSteps.has(step.id)
             const isPast = i < activeIndex
+            const Icon = STEP_ICONS[step.id]
 
             return (
               <div key={step.id} className="flex items-center shrink-0">
@@ -80,7 +89,7 @@ export function ProjectStepNav({ projectId }: { projectId: string }) {
                       <Check className="h-3 w-3 text-primary" />
                     </div>
                   ) : (
-                    <step.icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4" />
                   )}
                   <span className="hidden sm:inline">{step.label}</span>
                 </Link>
