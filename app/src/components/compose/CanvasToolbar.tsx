@@ -18,6 +18,8 @@ interface CanvasToolbarProps {
   figures: Figure[]
   surface: Surface
   projectId: string
+  /** The saved background has not painted onto the stage yet. */
+  backgroundPending: boolean
   onBackgroundUpload: (file: File) => void
 }
 
@@ -29,7 +31,7 @@ const MAX_EXPORT_ATTEMPTS = 4
 /** Browsers drop downloads fired back to back; give each one room to start. */
 const DOWNLOAD_GAP_MS = 400
 
-export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surface, projectId, onBackgroundUpload }: CanvasToolbarProps) {
+export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surface, projectId, backgroundPending, onBackgroundUpload }: CanvasToolbarProps) {
   const bgInputRef = useRef<HTMLInputElement>(null)
   const [isExporting, setIsExporting] = useState(false)
   const updateFigure = useUpdateFigure(projectId)
@@ -57,6 +59,13 @@ export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surfa
   async function handleExportPng() {
     const stage = stageRef.current
     if (!stage || isExporting) return
+
+    // Exporting now would print the bare canvas and still report success —
+    // the scene would be missing from a file nobody re-checks before printing.
+    if (backgroundPending) {
+      toast.error('The background is still loading — exporting now would print without the scene.')
+      return
+    }
 
     // One sheet per physical panel — that is what gets printed and trimmed.
     const regions = getPanelExportRegions({
@@ -150,13 +159,13 @@ export function CanvasToolbar({ stageRef, overlayRef, selectedId, figures, surfa
 
       <div className="h-5 w-px bg-white/[0.08] mx-0.5 sm:mx-1" />
 
-      <Button variant="outline" size="sm" className="rounded-full h-8 text-xs sm:text-sm" onClick={() => bgInputRef.current?.click()}>
+      <Button variant="outline" size="sm" className="rounded-full h-8 text-xs sm:text-sm" disabled={backgroundPending} onClick={() => bgInputRef.current?.click()}>
         <ImagePlus className="h-3.5 w-3.5 sm:mr-1.5" />
-        <span className="hidden sm:inline">Background</span>
+        <span className="hidden sm:inline">{backgroundPending ? 'Saving...' : 'Background'}</span>
       </Button>
       <input ref={bgInputRef} type="file" className="hidden" accept="image/*" onChange={handleBgFileChange} />
 
-      <Button variant="default" size="sm" className="rounded-full h-8 text-xs sm:text-sm" onClick={handleExportPng} disabled={isExporting}>
+      <Button variant="default" size="sm" className="rounded-full h-8 text-xs sm:text-sm" onClick={handleExportPng} disabled={isExporting || backgroundPending}>
         <Download className="h-3.5 w-3.5 sm:mr-1.5" />
         <span className="hidden sm:inline">{isExporting ? 'Exporting...' : `Export ${surface.dpi_target} DPI`}</span>
       </Button>
