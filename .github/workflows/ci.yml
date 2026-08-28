@@ -1,4 +1,4 @@
-# CI floor — modelled on dotfiles/templates/ci/ci-npm.yml.
+# CI floor — modelled on bitbaum/fleet templates/ci/ci-npm.yml.
 #
 # NB: the deployed application is `app/`, NOT the repo root. The fleet deploy
 # registry (fleetcrown/scripts/hetzner/apps.conf) pins
