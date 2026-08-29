@@ -1,6 +1,9 @@
 {
   "name": "printcraft",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=20"
+  },
   "private": true,
   "comment": "The app lives in app/. These root scripts are thin delegations so the gate is legible from the repo root — `cd app && ...` hid the individual gates behind one opaque `verify`, and tooling (and people) reading this file concluded the repo had no lint, typecheck or test at all.",
   "scripts": {
