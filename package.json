@@ -10,8 +10,13 @@
     "lint": "npm --prefix app run lint",
     "typecheck": "npm --prefix app run typecheck",
     "test": "npm --prefix app run test",
-    "verify": "npm --prefix app run verify",
+    "verify": "npm run format:check && npm --prefix app run verify",
     "build": "npm --prefix app run build",
-    "dev": "npm --prefix app run dev"
+    "dev": "npm --prefix app run dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
   }
 }
