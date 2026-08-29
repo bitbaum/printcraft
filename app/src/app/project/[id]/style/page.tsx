@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { use } from 'react'
-import Link from 'next/link'
-import { useProject, useUpdateProject } from '@/hooks/useProject'
-import { useStyles } from '@/hooks/useStyles'
-import { StyleGallery } from '@/components/styles/StyleGallery'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
-import { toast } from 'sonner'
+import { use } from 'react';
+import Link from 'next/link';
+import { useProject, useUpdateProject } from '@/hooks/useProject';
+import { useStyles } from '@/hooks/useStyles';
+import { StyleGallery } from '@/components/styles/StyleGallery';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function StylePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const { data: project } = useProject(id)
-  const { data: styles, isLoading } = useStyles()
-  const updateProject = useUpdateProject(id)
+  const { id } = use(params);
+  const { data: project } = useProject(id);
+  const { data: styles, isLoading } = useStyles();
+  const updateProject = useUpdateProject(id);
 
   function handleSelect(styleId: string) {
     updateProject.mutate(
@@ -22,8 +22,8 @@ export default function StylePage({ params }: { params: Promise<{ id: string }> 
       {
         onSuccess: () => toast.success('Style selected'),
         onError: (err) => toast.error(err.message),
-      }
-    )
+      },
+    );
   }
 
   return (
@@ -37,7 +37,9 @@ export default function StylePage({ params }: { params: Promise<{ id: string }> 
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-48 rounded-2xl" />
+          ))}
         </div>
       ) : styles ? (
         <StyleGallery
@@ -57,5 +59,5 @@ export default function StylePage({ params }: { params: Promise<{ id: string }> 
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useAuth } from '@/components/providers/AuthProvider'
-import { AppShell } from '@/components/layout/AppShell'
-import { ScrollReveal } from '@/components/ui/ScrollReveal'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { AppShell } from '@/components/layout/AppShell';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { Button } from '@/components/ui/button';
 import {
   Users,
   Palette,
@@ -16,25 +16,28 @@ import {
   Camera,
   Frame,
   Gem,
-} from 'lucide-react'
+} from 'lucide-react';
 
 const FEATURES = [
   {
     icon: Camera,
     title: 'Upload Real Photos',
-    description: 'Drop in photos of the people you love. Each one becomes a figure in your composition.',
+    description:
+      'Drop in photos of the people you love. Each one becomes a figure in your composition.',
   },
   {
     icon: Palette,
     title: 'Choose an Art Style',
-    description: 'Retro travel poster, oil portrait, watercolor, pop art — pick the emotional tone that fits.',
+    description:
+      'Retro travel poster, oil portrait, watercolor, pop art — pick the emotional tone that fits.',
   },
   {
     icon: Frame,
     title: 'Print on Any Surface',
-    description: 'Shower glass, canvas, metal, tile. Define your physical surface and we handle the rest.',
+    description:
+      'Shower glass, canvas, metal, tile. Define your physical surface and we handle the rest.',
   },
-]
+];
 
 const STEPS = [
   { number: '01', title: 'Upload', description: 'Add photos of each person', icon: Users },
@@ -42,28 +45,31 @@ const STEPS = [
   { number: '03', title: 'Surface', description: 'Define the physical print', icon: Ruler },
   { number: '04', title: 'Compose', description: 'Arrange the scene', icon: Layers },
   { number: '05', title: 'Export', description: 'Download print-ready files', icon: Download },
-]
+];
 
 const SHOWCASES = [
   {
     title: 'Memorial Portraits',
-    description: 'Bring together people who were never in the same place — grandparents with grandchildren, friends across decades.',
+    description:
+      'Bring together people who were never in the same place — grandparents with grandchildren, friends across decades.',
     tone: 'Sorrow + Love + Longing',
   },
   {
     title: 'Celebration Artwork',
-    description: 'A friend group scattered across continents, reunited in a single scene. The gathering that should have happened.',
+    description:
+      'A friend group scattered across continents, reunited in a single scene. The gathering that should have happened.',
     tone: 'Joy + Nostalgia',
   },
   {
     title: 'Passion Projects',
-    description: 'Enthusiast communities united in their element. Car clubs, musicians, athletes — together in art.',
+    description:
+      'Enthusiast communities united in their element. Car clubs, musicians, athletes — together in art.',
     tone: 'Pride + Identity',
   },
-]
+];
 
 export default function Home() {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   return (
     <AppShell>
@@ -85,19 +91,26 @@ export default function Home() {
           </h1>
 
           <p className="max-w-2xl mx-auto mt-6 sm:mt-8 text-base sm:text-lg md:text-xl text-muted-foreground font-light leading-relaxed animate-slide-up-delay-2 px-2">
-            Turn separate photos of real people into one unified artwork —
-            printed on surfaces that matter. Shower glass, canvas, metal, tile.
+            Turn separate photos of real people into one unified artwork — printed on surfaces that
+            matter. Shower glass, canvas, metal, tile.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-10 sm:mt-12 animate-slide-up-delay-3">
             <Link href={user ? '/projects' : '/login'} className="w-full sm:w-auto">
-              <Button size="lg" className="h-13 px-8 text-base font-medium rounded-full w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="h-13 px-8 text-base font-medium rounded-full w-full sm:w-auto"
+              >
                 {user ? 'Go to Projects' : 'Get Started'}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
             <a href="#how-it-works" className="w-full sm:w-auto">
-              <Button variant="ghost" size="lg" className="h-13 px-8 text-base font-medium rounded-full text-muted-foreground hover:text-foreground w-full sm:w-auto">
+              <Button
+                variant="ghost"
+                size="lg"
+                className="h-13 px-8 text-base font-medium rounded-full text-muted-foreground hover:text-foreground w-full sm:w-auto"
+              >
                 How it works
               </Button>
             </a>
@@ -124,7 +137,11 @@ export default function Home() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal staggerChildren staggerDelay={120} className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        <ScrollReveal
+          staggerChildren
+          staggerDelay={120}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"
+        >
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
@@ -143,7 +160,10 @@ export default function Home() {
       <div className="section-gradient-sep" />
 
       {/* How it works — Step flow */}
-      <section id="how-it-works" className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-28 scroll-mt-20">
+      <section
+        id="how-it-works"
+        className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-28 scroll-mt-20"
+      >
         <ScrollReveal>
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-sm font-medium tracking-widest uppercase text-primary mb-4">
@@ -155,11 +175,17 @@ export default function Home() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal staggerChildren staggerDelay={100} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <ScrollReveal
+          staggerChildren
+          staggerDelay={100}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6"
+        >
           {STEPS.map((step, i) => (
             <div key={step.number} className={i < STEPS.length - 1 ? 'step-line' : ''}>
               <div className="flex flex-col items-center text-center p-4 sm:p-6">
-                <span className="text-4xl font-extralight text-primary/30 mb-3 sm:mb-4 tabular-nums">{step.number}</span>
+                <span className="text-4xl font-extralight text-primary/30 mb-3 sm:mb-4 tabular-nums">
+                  {step.number}
+                </span>
                 <div className="h-12 w-12 rounded-full border border-white/[0.08] bg-white/[0.03] flex items-center justify-center mb-3 sm:mb-4">
                   <step.icon className="h-5 w-5 text-foreground/80" />
                 </div>
@@ -186,7 +212,11 @@ export default function Home() {
           </div>
         </ScrollReveal>
 
-        <ScrollReveal staggerChildren staggerDelay={120} className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+        <ScrollReveal
+          staggerChildren
+          staggerDelay={120}
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6"
+        >
           {SHOWCASES.map((item) => (
             <div
               key={item.title}
@@ -234,9 +264,24 @@ export default function Home() {
               <span className="text-sm text-muted-foreground">Scene composer for physical art</span>
             </div>
             <nav className="flex items-center gap-6">
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</a>
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</a>
+              <a
+                href="#"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Privacy
+              </a>
+              <a
+                href="#"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Terms
+              </a>
+              <a
+                href="#"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Contact
+              </a>
             </nav>
           </div>
           <p className="text-sm text-muted-foreground text-center sm:text-left mt-6">
@@ -245,5 +290,5 @@ export default function Home() {
         </div>
       </footer>
     </AppShell>
-  )
+  );
 }

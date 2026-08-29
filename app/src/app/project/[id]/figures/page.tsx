@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { use } from 'react'
-import Link from 'next/link'
-import { useFigures } from '@/hooks/useFigures'
-import { FigureUploader } from '@/components/figures/FigureUploader'
-import { FigureCard } from '@/components/figures/FigureCard'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
-import { ArrowRight, Lightbulb } from 'lucide-react'
+import { use } from 'react';
+import Link from 'next/link';
+import { useFigures } from '@/hooks/useFigures';
+import { FigureUploader } from '@/components/figures/FigureUploader';
+import { FigureCard } from '@/components/figures/FigureCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Lightbulb } from 'lucide-react';
 
 export default function FiguresPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const { data: figures, isLoading } = useFigures(id)
+  const { id } = use(params);
+  const { data: figures, isLoading } = useFigures(id);
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 py-8 sm:py-10 space-y-8 sm:space-y-10 animate-in-page">
@@ -36,7 +36,9 @@ export default function FiguresPage({ params }: { params: Promise<{ id: string }
             <li>Upload the original photo of each person or group</li>
             <li>Choose an art style in the next step</li>
             <li>Use an AI tool (Grok, Midjourney) to generate a styled version</li>
-            <li>Upload the styled version using the &quot;Upload styled&quot; button on each card</li>
+            <li>
+              Upload the styled version using the &quot;Upload styled&quot; button on each card
+            </li>
             <li>Compose all styled figures together on the canvas</li>
           </ol>
         </div>
@@ -45,11 +47,13 @@ export default function FiguresPage({ params }: { params: Promise<{ id: string }
       {/* Figures list */}
       {isLoading ? (
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-40 rounded-2xl" />
+          ))}
         </div>
       ) : figures?.length ? (
         <div className="space-y-4">
-          {figures.map(figure => (
+          {figures.map((figure) => (
             <FigureCard key={figure.id} figure={figure} projectId={id} />
           ))}
         </div>
@@ -71,5 +75,5 @@ export default function FiguresPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
     </div>
-  )
+  );
 }
