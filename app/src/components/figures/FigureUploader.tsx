@@ -1,46 +1,49 @@
-'use client'
+'use client';
 
-import { useCallback } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { Upload, CloudUpload } from 'lucide-react'
-import { useSupabaseUpload } from '@/hooks/useSupabaseUpload'
-import { useCreateFigure } from '@/hooks/useFigures'
-import { toast } from 'sonner'
+import { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Upload, CloudUpload } from 'lucide-react';
+import { useSupabaseUpload } from '@/hooks/useSupabaseUpload';
+import { useCreateFigure } from '@/hooks/useFigures';
+import { toast } from 'sonner';
 
 interface FigureUploaderProps {
-  projectId: string
+  projectId: string;
 }
 
 export function FigureUploader({ projectId }: FigureUploaderProps) {
-  const { upload, uploading } = useSupabaseUpload(projectId)
-  const createFigure = useCreateFigure()
+  const { upload, uploading } = useSupabaseUpload(projectId);
+  const createFigure = useCreateFigure();
 
-  const onDrop = useCallback(async (files: File[]) => {
-    for (const file of files) {
-      const result = await upload(file, 'originals')
-      if (!result) {
-        toast.error(`Failed to upload ${file.name}`)
-        continue
-      }
-
-      createFigure.mutate(
-        {
-          project_id: projectId,
-          original_photo_url: result.path,
-          label: file.name.replace(/\.[^/.]+$/, ''),
-        },
-        {
-          onError: (err) => toast.error(err.message),
+  const onDrop = useCallback(
+    async (files: File[]) => {
+      for (const file of files) {
+        const result = await upload(file, 'originals');
+        if (!result) {
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
         }
-      )
-    }
-  }, [upload, createFigure, projectId])
+
+        createFigure.mutate(
+          {
+            project_id: projectId,
+            original_photo_url: result.path,
+            label: file.name.replace(/\.[^/.]+$/, ''),
+          },
+          {
+            onError: (err) => toast.error(err.message),
+          },
+        );
+      }
+    },
+    [upload, createFigure, projectId],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] },
     disabled: uploading,
-  })
+  });
 
   return (
     <div
@@ -61,12 +64,16 @@ export function FigureUploader({ projectId }: FigureUploaderProps) {
           )}
         </div>
         <p className="text-base font-medium mb-1.5">
-          {uploading ? 'Uploading...' : isDragActive ? 'Drop photos here' : 'Drop photos or click to upload'}
+          {uploading
+            ? 'Uploading...'
+            : isDragActive
+              ? 'Drop photos here'
+              : 'Drop photos or click to upload'}
         </p>
         <p className="text-sm text-muted-foreground">
           PNG, JPG, WEBP — one photo per person or group
         </p>
       </div>
     </div>
-  )
+  );
 }

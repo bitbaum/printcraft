@@ -1,15 +1,15 @@
-import type { SurfaceType, Panel, SeamPosition, DeadZone } from '@/types/database'
+import type { SurfaceType, Panel, SeamPosition, DeadZone } from '@/types/database';
 
 export interface SurfacePreset {
-  id: string
-  name: string
-  description: string
-  type: SurfaceType
-  panels: Panel[]
-  seam_positions: SeamPosition[]
-  dead_zones: DeadZone[]
-  dpi_target: number
-  bleed_mm: number
+  id: string;
+  name: string;
+  description: string;
+  type: SurfaceType;
+  panels: Panel[];
+  seam_positions: SeamPosition[];
+  dead_zones: DeadZone[];
+  dpi_target: number;
+  bleed_mm: number;
 }
 
 export const SURFACE_PRESETS: SurfacePreset[] = [
@@ -68,4 +68,4 @@ export const SURFACE_PRESETS: SurfacePreset[] = [
     dpi_target: 200,
     bleed_mm: 3,
   },
-]
+];

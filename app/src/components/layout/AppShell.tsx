@@ -1,60 +1,62 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/components/providers/AuthProvider'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { LogOut, Menu, X, User } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { LogOut, Menu, X, User } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 const NAV_LINKS = [
   { href: '/projects', label: 'Projects' },
   { href: '/#how-it-works', label: 'How It Works' },
-]
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
-  const router = useRouter()
-  const pathname = usePathname()
-  const supabase = createClient()
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const supabase = createClient();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 10)
+      setScrolled(window.scrollY > 10);
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Close the mobile menu on route change. Adjusting state during render with a
   // remembered previous value (React "you might not need an effect") avoids the
   // cascading re-render an effect-driven setState would trigger.
-  const [prevPathname, setPrevPathname] = useState(pathname)
+  const [prevPathname, setPrevPathname] = useState(pathname);
   if (pathname !== prevPathname) {
-    setPrevPathname(pathname)
-    setMobileMenuOpen(false)
+    setPrevPathname(pathname);
+    setMobileMenuOpen(false);
   }
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = '' }
-  }, [mobileMenuOpen])
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
   }
 
   return (
@@ -64,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           'sticky top-0 z-50 transition-all duration-300',
           scrolled
             ? 'glass-strong border-b border-white/[0.06] shadow-lg shadow-black/10'
-            : 'bg-transparent'
+            : 'bg-transparent',
         )}
       >
         <div className="flex h-14 items-center justify-between px-4 sm:px-6 md:px-8 max-w-7xl mx-auto w-full">
@@ -78,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(link => (
+            {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -86,7 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   'px-4 py-2 text-sm font-medium rounded-full transition-colors',
                   pathname === link.href
                     ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {link.label}
@@ -136,21 +138,24 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         {/* Glow line */}
-        <div className={cn('h-px glow-line transition-opacity duration-300', scrolled ? 'opacity-100' : 'opacity-0')} />
+        <div
+          className={cn(
+            'h-px glow-line transition-opacity duration-300',
+            scrolled ? 'opacity-100' : 'opacity-0',
+          )}
+        />
       </header>
 
       {/* Full-screen mobile menu overlay */}
       <div
         className={cn(
           'fixed inset-0 z-40 md:hidden transition-all duration-300',
-          mobileMenuOpen
-            ? 'opacity-100 pointer-events-auto'
-            : 'opacity-0 pointer-events-none'
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
         )}
       >
         <div className="absolute inset-0 bg-background/95 backdrop-blur-xl" />
         <div className="relative flex flex-col items-center justify-center h-full gap-2 px-6">
-          {NAV_LINKS.map(link => (
+          {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -158,7 +163,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 'w-full max-w-sm text-center px-6 py-5 text-xl font-medium rounded-2xl transition-colors',
                 pathname === link.href
                   ? 'text-foreground bg-white/[0.06]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.04]',
               )}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -177,7 +182,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="text-base">{user.email?.split('@')[0]}</span>
               </div>
               <button
-                onClick={() => { setMobileMenuOpen(false); handleLogout() }}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
                 className="w-full max-w-sm text-center px-6 py-5 text-xl font-medium text-muted-foreground hover:text-foreground rounded-2xl hover:bg-white/[0.04] transition-colors"
               >
                 Sign out
@@ -195,9 +203,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      <main className="flex-1 flex flex-col">
-        {children}
-      </main>
+      <main className="flex-1 flex flex-col">{children}</main>
     </div>
-  )
+  );
 }

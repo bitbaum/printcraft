@@ -111,4 +111,4 @@ scenes:
 
 # Preferred generation model
 models:
-  default: grok-aurora  # Works via browser automation, short prompts (~200 chars)
+  default: grok-aurora # Works via browser automation, short prompts (~200 chars)

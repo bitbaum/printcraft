@@ -1,24 +1,24 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useProjects, useDeleteProject } from '@/hooks/useProjects'
-import { AppShell } from '@/components/layout/AppShell'
-import { ProjectCard } from '@/components/projects/ProjectCard'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Sparkles } from 'lucide-react'
-import { toast } from 'sonner'
+import Link from 'next/link';
+import { useProjects, useDeleteProject } from '@/hooks/useProjects';
+import { AppShell } from '@/components/layout/AppShell';
+import { ProjectCard } from '@/components/projects/ProjectCard';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ProjectsPage() {
-  const { data: projects, isLoading } = useProjects()
-  const deleteProject = useDeleteProject()
+  const { data: projects, isLoading } = useProjects();
+  const deleteProject = useDeleteProject();
 
   function handleDelete(id: string) {
-    if (!confirm('Delete this project?')) return
+    if (!confirm('Delete this project?')) return;
     deleteProject.mutate(id, {
       onSuccess: () => toast.success('Project deleted'),
       onError: (err) => toast.error(err.message),
-    })
+    });
   }
 
   return (
@@ -29,9 +29,7 @@ export default function ProjectsPage() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-12 sm:pt-16 pb-10 sm:pb-12">
           <div className="flex items-end justify-between gap-4">
             <div className="animate-slide-up">
-              <h1 className="text-4xl sm:text-5xl font-extralight tracking-tight">
-                Your Projects
-              </h1>
+              <h1 className="text-4xl sm:text-5xl font-extralight tracking-tight">Your Projects</h1>
               <p className="text-lg text-muted-foreground mt-3 font-light">
                 Artwork compositions in progress
               </p>
@@ -75,8 +73,8 @@ export default function ProjectsPage() {
               No projects yet
             </h2>
             <p className="text-muted-foreground max-w-md mb-8 animate-slide-up-delay-2">
-              Create your first artwork composition. Upload photos of real people,
-              choose an art style, and bring them together in one scene.
+              Create your first artwork composition. Upload photos of real people, choose an art
+              style, and bring them together in one scene.
             </p>
             <div className="animate-slide-up-delay-3">
               <Link href="/projects/new">
@@ -90,5 +88,5 @@ export default function ProjectsPage() {
         )}
       </div>
     </AppShell>
-  )
+  );
 }

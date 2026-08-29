@@ -1,55 +1,55 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Trash2, Upload, Check } from 'lucide-react'
-import { getImageUrl } from '@/lib/supabase/storage'
-import { useUpdateFigure, useDeleteFigure } from '@/hooks/useFigures'
-import { useSupabaseUpload } from '@/hooks/useSupabaseUpload'
-import { toast } from 'sonner'
-import type { Figure } from '@/types/database'
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Trash2, Upload, Check } from 'lucide-react';
+import { getImageUrl } from '@/lib/supabase/storage';
+import { useUpdateFigure, useDeleteFigure } from '@/hooks/useFigures';
+import { useSupabaseUpload } from '@/hooks/useSupabaseUpload';
+import { toast } from 'sonner';
+import type { Figure } from '@/types/database';
 
 interface FigureCardProps {
-  figure: Figure
-  projectId: string
+  figure: Figure;
+  projectId: string;
 }
 
 export function FigureCard({ figure, projectId }: FigureCardProps) {
-  const [label, setLabel] = useState(figure.label ?? '')
-  const updateFigure = useUpdateFigure(projectId)
-  const deleteFigure = useDeleteFigure(projectId)
-  const { upload, uploading } = useSupabaseUpload(projectId)
+  const [label, setLabel] = useState(figure.label ?? '');
+  const updateFigure = useUpdateFigure(projectId);
+  const deleteFigure = useDeleteFigure(projectId);
+  const { upload, uploading } = useSupabaseUpload(projectId);
 
-  const originalUrl = getImageUrl(figure.original_photo_url)
-  const styledUrl = figure.styled_url ? getImageUrl(figure.styled_url) : null
+  const originalUrl = getImageUrl(figure.original_photo_url);
+  const styledUrl = figure.styled_url ? getImageUrl(figure.styled_url) : null;
 
   function handleLabelBlur() {
     if (label !== (figure.label ?? '')) {
-      updateFigure.mutate({ id: figure.id, data: { label: label || null } })
+      updateFigure.mutate({ id: figure.id, data: { label: label || null } });
     }
   }
 
   async function handleStyledUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const result = await upload(file, 'styled')
+    const result = await upload(file, 'styled');
     if (!result) {
-      toast.error('Upload failed')
-      return
+      toast.error('Upload failed');
+      return;
     }
 
     updateFigure.mutate(
       { id: figure.id, data: { styled_url: result.path, status: 'styled' } },
-      { onSuccess: () => toast.success('Styled version uploaded') }
-    )
+      { onSuccess: () => toast.success('Styled version uploaded') },
+    );
   }
 
   function handleDelete() {
-    if (!confirm('Delete this figure?')) return
-    deleteFigure.mutate(figure.id)
+    if (!confirm('Delete this figure?')) return;
+    deleteFigure.mutate(figure.id);
   }
 
   return (
@@ -60,7 +60,11 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
           <div className="flex gap-3 sm:gap-5">
             {/* Original photo */}
             <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.04] shrink-0">
-              <img src={originalUrl} alt={figure.label ?? 'Figure'} className="w-full h-full object-cover" />
+              <img
+                src={originalUrl}
+                alt={figure.label ?? 'Figure'}
+                className="w-full h-full object-cover"
+              />
             </div>
 
             {/* Styled version */}
@@ -68,7 +72,10 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
               {styledUrl ? (
                 <>
                   <img src={styledUrl} alt="Styled" className="w-full h-full object-cover" />
-                  <Badge className="absolute bottom-2 left-2 text-xs rounded-full" variant="secondary">
+                  <Badge
+                    className="absolute bottom-2 left-2 text-xs rounded-full"
+                    variant="secondary"
+                  >
                     <Check className="h-3 w-3 mr-1" /> Styled
                   </Badge>
                 </>
@@ -78,7 +85,13 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
                   <span className="text-xs text-muted-foreground">
                     {uploading ? 'Uploading...' : 'Upload styled'}
                   </span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleStyledUpload} disabled={uploading} />
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleStyledUpload}
+                    disabled={uploading}
+                  />
                 </label>
               )}
             </div>
@@ -88,7 +101,7 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0 sm:py-1">
             <Input
               value={label}
-              onChange={e => setLabel(e.target.value)}
+              onChange={(e) => setLabel(e.target.value)}
               onBlur={handleLabelBlur}
               placeholder="Label (e.g., Roli + girlfriend)"
               className="h-10 text-base bg-transparent border-white/[0.06]"
@@ -110,5 +123,5 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

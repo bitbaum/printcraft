@@ -1,5 +1,5 @@
-import { cmToPixels, getTotalDimensions, getPanelBounds } from './surface'
-import type { Panel } from '@/types/database'
+import { cmToPixels, getTotalDimensions, getPanelBounds } from './surface';
+import type { Panel } from '@/types/database';
 
 /**
  * Browser 2D-canvas ceiling. Konva rasterises the whole stage into one canvas
@@ -9,25 +9,25 @@ import type { Panel } from '@/types/database'
  * limit varies), so it is a bound we can apply up front; a browser that still
  * refuses is handled empirically by retrying with `maxPixelRatio`.
  */
-export const MAX_CANVAS_DIMENSION_PX = 16384
+export const MAX_CANVAS_DIMENSION_PX = 16384;
 
 export interface ExportDimensions {
-  total_width_px: number
-  total_height_px: number
-  panels: { index: number; x_px: number; y_px: number; width_px: number; height_px: number }[]
+  total_width_px: number;
+  total_height_px: number;
+  panels: { index: number; x_px: number; y_px: number; width_px: number; height_px: number }[];
 }
 
 export function calculateExportDimensions(
   panels: Panel[],
   dpi: number,
-  bleedMm: number
+  bleedMm: number,
 ): ExportDimensions {
-  const bleedCm = bleedMm / 10
-  const bounds = getPanelBounds(panels)
-  const { width_cm, height_cm } = getTotalDimensions(panels)
+  const bleedCm = bleedMm / 10;
+  const bounds = getPanelBounds(panels);
+  const { width_cm, height_cm } = getTotalDimensions(panels);
 
-  const total_width_px = cmToPixels(width_cm + bleedCm * 2, dpi)
-  const total_height_px = cmToPixels(height_cm + bleedCm * 2, dpi)
+  const total_width_px = cmToPixels(width_cm + bleedCm * 2, dpi);
+  const total_height_px = cmToPixels(height_cm + bleedCm * 2, dpi);
 
   const panelExports = bounds.map((b, i) => ({
     index: i,
@@ -35,21 +35,21 @@ export function calculateExportDimensions(
     y_px: 0,
     width_px: cmToPixels(b.width_cm + bleedCm * 2, dpi),
     height_px: cmToPixels(b.height_cm + bleedCm * 2, dpi),
-  }))
+  }));
 
-  return { total_width_px, total_height_px, panels: panelExports }
+  return { total_width_px, total_height_px, panels: panelExports };
 }
 
-export type ExportLimit = 'none' | 'dimension' | 'browser'
+export type ExportLimit = 'none' | 'dimension' | 'browser';
 
 export interface ExportScale {
   /** Multiplier to hand Konva's `pixelRatio`. */
-  pixelRatio: number
-  width_px: number
-  height_px: number
+  pixelRatio: number;
+  width_px: number;
+  height_px: number;
   /** DPI this export actually achieves — equals the target unless limited. */
-  dpi: number
-  limitedBy: ExportLimit
+  dpi: number;
+  limitedBy: ExportLimit;
 }
 
 /**
@@ -64,27 +64,27 @@ export interface ExportScale {
  * that failed rather than guessing a fixed fallback.
  */
 export function resolveExportScale(params: {
-  canvasWidth: number
-  canvasHeight: number
-  targetWidthPx: number
-  targetDpi: number
-  maxPixelRatio?: number
+  canvasWidth: number;
+  canvasHeight: number;
+  targetWidthPx: number;
+  targetDpi: number;
+  maxPixelRatio?: number;
 }): ExportScale {
-  const { canvasWidth, canvasHeight, targetWidthPx, targetDpi, maxPixelRatio } = params
+  const { canvasWidth, canvasHeight, targetWidthPx, targetDpi, maxPixelRatio } = params;
 
   if (canvasWidth <= 0 || canvasHeight <= 0 || targetWidthPx <= 0) {
-    return { pixelRatio: 1, width_px: 0, height_px: 0, dpi: 0, limitedBy: 'none' }
+    return { pixelRatio: 1, width_px: 0, height_px: 0, dpi: 0, limitedBy: 'none' };
   }
 
-  const wanted = targetWidthPx / canvasWidth
-  const dimensionCap = MAX_CANVAS_DIMENSION_PX / Math.max(canvasWidth, canvasHeight)
-  const browserCap = maxPixelRatio ?? Infinity
+  const wanted = targetWidthPx / canvasWidth;
+  const dimensionCap = MAX_CANVAS_DIMENSION_PX / Math.max(canvasWidth, canvasHeight);
+  const browserCap = maxPixelRatio ?? Infinity;
 
-  const pixelRatio = Math.max(Math.min(wanted, dimensionCap, browserCap), 0)
+  const pixelRatio = Math.max(Math.min(wanted, dimensionCap, browserCap), 0);
 
-  let limitedBy: ExportLimit = 'none'
+  let limitedBy: ExportLimit = 'none';
   if (pixelRatio < wanted) {
-    limitedBy = browserCap < dimensionCap ? 'browser' : 'dimension'
+    limitedBy = browserCap < dimensionCap ? 'browser' : 'dimension';
   }
 
   return {
@@ -93,22 +93,22 @@ export function resolveExportScale(params: {
     height_px: Math.round(canvasHeight * pixelRatio),
     dpi: Math.round(targetDpi * (pixelRatio / wanted)),
     limitedBy,
-  }
+  };
 }
 
 export interface PanelExportRegion {
-  index: number
+  index: number;
   /**
    * Crop rectangle in stage coordinates. It deliberately reaches outside the
    * stage wherever bleed has no artwork behind it — on inner edges the bleed
    * is real neighbouring content, which is what keeps a scene continuous
    * across a glass seam.
    */
-  stage: { x: number; y: number; width: number; height: number }
+  stage: { x: number; y: number; width: number; height: number };
   /** Size of the printed file at the surface's target DPI. */
-  output: { width_px: number; height_px: number }
+  output: { width_px: number; height_px: number };
   /** Stage units of each edge that fall outside the artwork and have no pixels behind them. */
-  outside: { left: number; top: number; right: number; bottom: number }
+  outside: { left: number; top: number; right: number; bottom: number };
 }
 
 /**
@@ -120,32 +120,32 @@ export interface PanelExportRegion {
  * Panel y-origin is the bottom edge, matching how dead zones are placed.
  */
 export function getPanelExportRegions(params: {
-  panels: Panel[]
-  bleedMm: number
-  dpi: number
-  stageWidth: number
-  stageHeight: number
+  panels: Panel[];
+  bleedMm: number;
+  dpi: number;
+  stageWidth: number;
+  stageHeight: number;
 }): PanelExportRegion[] {
-  const { panels, bleedMm, dpi, stageWidth, stageHeight } = params
-  const total = getTotalDimensions(panels)
+  const { panels, bleedMm, dpi, stageWidth, stageHeight } = params;
+  const total = getTotalDimensions(panels);
 
   if (stageWidth <= 0 || stageHeight <= 0 || total.width_cm <= 0 || total.height_cm <= 0) {
-    return []
+    return [];
   }
 
-  const bleedCm = bleedMm / 10
-  const unitsPerCmX = stageWidth / total.width_cm
-  const unitsPerCmY = stageHeight / total.height_cm
+  const bleedCm = bleedMm / 10;
+  const unitsPerCmX = stageWidth / total.width_cm;
+  const unitsPerCmY = stageHeight / total.height_cm;
 
   return getPanelBounds(panels).map((bounds, index) => {
-    const widthCm = bounds.width_cm + bleedCm * 2
-    const heightCm = bounds.height_cm + bleedCm * 2
+    const widthCm = bounds.width_cm + bleedCm * 2;
+    const heightCm = bounds.height_cm + bleedCm * 2;
 
-    const x = (bounds.x_cm - bleedCm) * unitsPerCmX
+    const x = (bounds.x_cm - bleedCm) * unitsPerCmX;
     // Panels sit on the bottom edge; a shorter panel leaves the gap at the top.
-    const y = (total.height_cm - bounds.height_cm - bleedCm) * unitsPerCmY
-    const width = widthCm * unitsPerCmX
-    const height = heightCm * unitsPerCmY
+    const y = (total.height_cm - bounds.height_cm - bleedCm) * unitsPerCmY;
+    const width = widthCm * unitsPerCmX;
+    const height = heightCm * unitsPerCmY;
 
     return {
       index,
@@ -160,6 +160,6 @@ export function getPanelExportRegions(params: {
         right: Math.max(0, x + width - stageWidth),
         bottom: Math.max(0, y + height - stageHeight),
       },
-    }
-  })
+    };
+  });
 }

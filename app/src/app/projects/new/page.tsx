@@ -1,24 +1,24 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCreateProject } from '@/hooks/useProjects'
-import { AppShell } from '@/components/layout/AppShell'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCreateProject } from '@/hooks/useProjects';
+import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 export default function NewProjectPage() {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [sceneDescription, setSceneDescription] = useState('')
-  const router = useRouter()
-  const createProject = useCreateProject()
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [sceneDescription, setSceneDescription] = useState('');
+  const router = useRouter();
+  const createProject = useCreateProject();
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
     createProject.mutate(
       {
         name,
@@ -27,12 +27,12 @@ export default function NewProjectPage() {
       },
       {
         onSuccess: (project) => {
-          toast.success('Project created')
-          router.push(`/project/${project.id}/figures`)
+          toast.success('Project created');
+          router.push(`/project/${project.id}/figures`);
         },
         onError: (err) => toast.error(err.message),
-      }
-    )
+      },
+    );
   }
 
   return (
@@ -48,43 +48,58 @@ export default function NewProjectPage() {
         <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm text-muted-foreground">Name</Label>
+              <Label htmlFor="name" className="text-sm text-muted-foreground">
+                Name
+              </Label>
               <Input
                 id="name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Amphicar Lake Garda"
                 className="h-11 bg-transparent border-white/[0.08]"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm text-muted-foreground">Description (optional)</Label>
+              <Label htmlFor="description" className="text-sm text-muted-foreground">
+                Description (optional)
+              </Label>
               <Textarea
                 id="description"
                 value={description}
-                onChange={e => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder="What is this artwork for?"
                 rows={2}
                 className="bg-transparent border-white/[0.08]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="scene" className="text-sm text-muted-foreground">Scene Description (optional)</Label>
+              <Label htmlFor="scene" className="text-sm text-muted-foreground">
+                Scene Description (optional)
+              </Label>
               <Textarea
                 id="scene"
                 value={sceneDescription}
-                onChange={e => setSceneDescription(e.target.value)}
+                onChange={(e) => setSceneDescription(e.target.value)}
                 placeholder="e.g., Lake Garda at golden hour, green hills, Italian villages"
                 rows={3}
                 className="bg-transparent border-white/[0.08]"
               />
             </div>
             <div className="flex gap-3 justify-end pt-2">
-              <Button type="button" variant="ghost" className="rounded-full" onClick={() => router.back()}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-full"
+                onClick={() => router.back()}
+              >
                 Cancel
               </Button>
-              <Button type="submit" className="rounded-full px-6" disabled={createProject.isPending}>
+              <Button
+                type="submit"
+                className="rounded-full px-6"
+                disabled={createProject.isPending}
+              >
                 {createProject.isPending ? 'Creating...' : 'Create Project'}
               </Button>
             </div>
@@ -92,5 +107,5 @@ export default function NewProjectPage() {
         </div>
       </div>
     </AppShell>
-  )
+  );
 }

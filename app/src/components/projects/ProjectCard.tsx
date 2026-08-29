@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Trash2, Palette, ArrowUpRight } from 'lucide-react'
-import { deriveProjectProgress } from '@/lib/domain/project-progress'
-import type { Project } from '@/types/database'
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Trash2, Palette, ArrowUpRight } from 'lucide-react';
+import { deriveProjectProgress } from '@/lib/domain/project-progress';
+import type { Project } from '@/types/database';
 
 interface ProjectCardProps {
-  project: Project
-  onDelete: (id: string) => void
+  project: Project;
+  onDelete: (id: string) => void;
 }
 
 export function ProjectCard({ project, onDelete }: ProjectCardProps) {
@@ -21,7 +21,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
     hasStyle: !!project.style_id,
     hasSurface: (project.surfaces?.length ?? 0) > 0,
     hasComposition: (project.compositions?.length ?? 0) > 0,
-  })
+  });
 
   return (
     <Card className="group relative overflow-hidden rounded-2xl border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 card-hover">
@@ -63,10 +63,13 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
         variant="ghost"
         size="icon"
         className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 h-8 w-8 rounded-full hover:bg-destructive/10"
-        onClick={(e) => { e.preventDefault(); onDelete(project.id) }}
+        onClick={(e) => {
+          e.preventDefault();
+          onDelete(project.id);
+        }}
       >
         <Trash2 className="h-3.5 w-3.5 text-destructive" />
       </Button>
     </Card>
-  )
+  );
 }

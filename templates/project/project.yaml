@@ -4,15 +4,15 @@
 
 client: ClientName
 title: Project Title
-status: in-progress          # in-progress | blocked | complete | archived
+status: in-progress # in-progress | blocked | complete | archived
 created: 2026-XX-XX
 
 # ──────────────────────────────────────────────────────────────
 # Physical surface being printed on
 # ──────────────────────────────────────────────────────────────
 surface:
-  name: describe-the-surface    # e.g. shower-wall-corner, canvas-landscape
-  dpi: 150                      # 150 min, 200-300 preferred
+  name: describe-the-surface # e.g. shower-wall-corner, canvas-landscape
+  dpi: 150 # 150 min, 200-300 preferred
   panels:
     - id: main
       width_cm: 100
@@ -24,14 +24,14 @@ surface:
     # - id: right
     #   width_cm: 120
     #   height_cm: 200
-  mounting: flat                # flat | corner | curved
-  material: canvas              # canvas | glass | acrylic | fabric
+  mounting: flat # flat | corner | curved
+  material: canvas # canvas | glass | acrylic | fabric
 
 # ──────────────────────────────────────────────────────────────
 # Art direction — this prompt is included in every generation
 # ──────────────────────────────────────────────────────────────
 style:
-  name: style-name              # e.g. retro-italian-poster-1960s
+  name: style-name # e.g. retro-italian-poster-1960s
   prompt: |
     One or two sentences describing the art style. KEEP THIS SHORT —
     long prompts cause Grok to route to photo-edit mode instead of Aurora.
@@ -51,7 +51,7 @@ scene:
 # ──────────────────────────────────────────────────────────────
 characters:
   - id: main-subject
-    role: hero                  # hero | supporting | background
+    role: hero # hero | supporting | background
     reference_photo: source/photos/main.jpg
     notes: Who this is, what's distinctive about them
   # - id: friend-1
