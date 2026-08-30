@@ -104,14 +104,20 @@ export function CompositionCanvas({ projectId, figures, surface }: CompositionCa
 
   const handleDragEnd = useCallback(
     (figureId: string, normX: number, normY: number) => {
-      updateFigure.mutate({ id: figureId, data: { position_x: normX, position_y: normY } });
+      updateFigure.mutate(
+        { id: figureId, data: { position_x: normX, position_y: normY } },
+        { onError: (err) => toast.error(err.message) },
+      );
     },
     [updateFigure],
   );
 
   const handleScaleChange = useCallback(
     (figureId: string, scale: number) => {
-      updateFigure.mutate({ id: figureId, data: { scale } });
+      updateFigure.mutate(
+        { id: figureId, data: { scale } },
+        { onError: (err) => toast.error(err.message) },
+      );
     },
     [updateFigure],
   );
