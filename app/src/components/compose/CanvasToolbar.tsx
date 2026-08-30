@@ -50,7 +50,10 @@ export function CanvasToolbar({
     if (!selectedFigure) return;
     const newDepth =
       direction === 'up' ? selectedFigure.z_depth + 1 : Math.max(0, selectedFigure.z_depth - 1);
-    updateFigure.mutate({ id: selectedFigure.id, data: { z_depth: newDepth } });
+    updateFigure.mutate(
+      { id: selectedFigure.id, data: { z_depth: newDepth } },
+      { onError: (err) => toast.error(err.message) },
+    );
   }
 
   function downloadPanel(file: PanelFile, panelCount: number, dpi: number) {
