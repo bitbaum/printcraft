@@ -75,8 +75,13 @@ export function ProjectStepNav({ projectId }: { projectId: string }) {
 
                 <Link
                   href={href}
+                  // `step`, not `page`: this is a progress rail through one
+                  // project, and aria-current="step" is the token for exactly
+                  // that. It also reaches the 44px floor — these pills came out
+                  // near 36px and are the primary way through the flow.
+                  aria-current={isActive ? 'step' : undefined}
                   className={cn(
-                    'relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-sm font-medium rounded-full transition-all whitespace-nowrap',
+                    'relative flex min-h-11 items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-sm font-medium rounded-full transition-all whitespace-nowrap',
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                       : isComplete

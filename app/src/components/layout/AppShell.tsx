@@ -84,8 +84,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
+                // The comparison below already knows which link is the page you
+                // are on; it only painted it. Announce it too, or the highlight
+                // exists solely for people who can see it.
+                aria-current={pathname === link.href ? 'page' : undefined}
                 className={cn(
-                  'px-4 py-2 text-sm font-medium rounded-full transition-colors',
+                  // min-h-11 is the 44px touch floor. py-2 on text-sm came out
+                  // near 36px, which is a fiddly target on a phone.
+                  'inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium rounded-full transition-colors',
                   pathname === link.href
                     ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground',
@@ -129,7 +135,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden h-10 w-10 p-0"
+              // h-10 w-10 was 40px — under the 44px floor, on the one control a
+              // phone user must hit to reach any other page.
+              className="md:hidden h-11 w-11 p-0"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -159,6 +169,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={pathname === link.href ? 'page' : undefined}
               className={cn(
                 'w-full max-w-sm text-center px-6 py-5 text-xl font-medium rounded-2xl transition-colors',
                 pathname === link.href
