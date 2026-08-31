@@ -27,7 +27,10 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
 
   function handleLabelBlur() {
     if (label !== (figure.label ?? '')) {
-      updateFigure.mutate({ id: figure.id, data: { label: label || null } });
+      updateFigure.mutate(
+        { id: figure.id, data: { label: label || null } },
+        { onError: (err) => toast.error(err.message) },
+      );
     }
   }
 
@@ -49,7 +52,9 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
 
   function handleDelete() {
     if (!confirm('Delete this figure?')) return;
-    deleteFigure.mutate(figure.id);
+    deleteFigure.mutate(figure.id, {
+      onError: (err) => toast.error(err.message),
+    });
   }
 
   return (
