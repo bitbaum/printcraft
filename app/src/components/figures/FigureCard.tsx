@@ -46,7 +46,13 @@ export function FigureCard({ figure, projectId }: FigureCardProps) {
 
     updateFigure.mutate(
       { id: figure.id, data: { styled_url: result.path, status: 'styled' } },
-      { onSuccess: () => toast.success('Styled version uploaded') },
+      {
+        onSuccess: () => toast.success('Styled version uploaded'),
+        // The file is already in storage; only this row makes it the figure's
+        // styled version. Failing quietly leaves the card showing "Upload
+        // styled" over an upload that appeared to work.
+        onError: (err) => toast.error(err.message),
+      },
     );
   }
 
