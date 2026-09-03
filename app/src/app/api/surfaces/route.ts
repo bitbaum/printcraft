@@ -17,9 +17,9 @@ export async function GET(request: NextRequest) {
     .from('surfaces')
     .select('*')
     .eq('project_id', projectId)
-    .single();
+    .maybeSingle();
 
-  if (error) return NextResponse.json({ success: false, data: null });
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
 }
 

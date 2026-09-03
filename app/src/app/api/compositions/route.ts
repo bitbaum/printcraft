@@ -19,9 +19,9 @@ export async function GET(request: NextRequest) {
     .eq('project_id', projectId)
     .order('version', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error) return NextResponse.json({ success: false, data: null });
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
 }
 
