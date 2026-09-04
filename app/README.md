@@ -7,9 +7,9 @@ a self-hosted Supabase stack.
 ## Getting started
 
 ```bash
-npm install
+pnpm install
 cp .env.local.example .env.local   # fill in Supabase keys + AI provider tokens
-npm run dev
+pnpm run dev
 ```
 
 Open http://localhost:3000.

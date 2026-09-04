@@ -1,0 +1,8 @@
+# pnpm 11 blocks dependency build scripts by default; allow only what we trust.
+# msw's postinstall just checks for a worker script — harmless, and allowed so
+# the install log stays clean.
+allowBuilds:
+  esbuild: true
+  msw: true
+  sharp: true
+  unrs-resolver: true
