@@ -41,13 +41,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from('compositions')
     .select('version')
     .eq('project_id', parsed.data.project_id)
     .order('version', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
+
+  if (existingError)
+    return NextResponse.json({ success: false, error: existingError.message }, { status: 500 });
 
   const nextVersion = (existing?.version ?? 0) + 1;
 
