@@ -19,3 +19,9 @@ yarn.lock
 # is where it is most opinionated and least useful, and it would bury the real
 # diff. Remove this line when you want docs formatted too.
 *.md
+
+# Generation-round content, not code. Several round manifests are not even
+# parseable YAML (prose with backticks and multi-line scalars), so prettier
+# errors out on them — root `verify` was broken on main because of this
+# (CI only gates app/, so it never noticed).
+projects/
