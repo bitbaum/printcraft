@@ -40,7 +40,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Upsert: delete existing surface for project, then insert
-  await supabase.from('surfaces').delete().eq('project_id', parsed.data.project_id);
+  const { error: deleteError } = await supabase
+    .from('surfaces')
+    .delete()
+    .eq('project_id', parsed.data.project_id);
+
+  if (deleteError)
+    return NextResponse.json({ success: false, error: deleteError.message }, { status: 500 });
 
   const { data, error } = await supabase.from('surfaces').insert(parsed.data).select().single();
 
