@@ -12,7 +12,7 @@ import { ownsProject, ownsFigure } from './ownership';
 type Row = Record<string, string>;
 type SupabaseArg = Parameters<typeof ownsProject>[0];
 
-function fakeSupabase(tables: Record<string, Row[]>): SupabaseArg {
+function fakeSupabase(tables: Record<string, Row[]>, failTable?: string): SupabaseArg {
   const client = {
     from(table: string) {
       const filters: Row = {};
@@ -23,6 +23,9 @@ function fakeSupabase(tables: Record<string, Row[]>): SupabaseArg {
           return builder;
         },
         maybeSingle: async () => {
+          if (table === failTable) {
+            return { data: null, error: { message: `${table} query failed` } };
+          }
           const rows = tables[table] ?? [];
           const match = rows.find((row) =>
             Object.entries(filters).every(([column, value]) => row[column] === value),
@@ -46,34 +49,67 @@ const db = {
 
 describe('ownsProject', () => {
   it('accepts the owner', async () => {
-    expect(await ownsProject(fakeSupabase(db), 'project-a', OWNER)).toBe(true);
+    expect(await ownsProject(fakeSupabase(db), 'project-a', OWNER)).toEqual({
+      owns: true,
+      error: null,
+    });
   });
 
   it('refuses someone else holding a real project id', async () => {
-    expect(await ownsProject(fakeSupabase(db), 'project-a', STRANGER)).toBe(false);
+    expect(await ownsProject(fakeSupabase(db), 'project-a', STRANGER)).toEqual({
+      owns: false,
+      error: null,
+    });
   });
 
   it('refuses an id that does not exist', async () => {
-    expect(await ownsProject(fakeSupabase(db), 'project-nope', OWNER)).toBe(false);
+    expect(await ownsProject(fakeSupabase(db), 'project-nope', OWNER)).toEqual({
+      owns: false,
+      error: null,
+    });
+  });
+
+  it('surfaces a query failure instead of silently reporting not-owned', async () => {
+    const result = await ownsProject(fakeSupabase(db, 'projects'), 'project-a', OWNER);
+    expect(result.owns).toBe(false);
+    expect(result.error).not.toBeNull();
   });
 });
 
 describe('ownsFigure', () => {
   it("accepts a figure inside the caller's own project", async () => {
-    expect(await ownsFigure(fakeSupabase(db), 'figure-a', OWNER)).toBe(true);
+    expect(await ownsFigure(fakeSupabase(db), 'figure-a', OWNER)).toEqual({
+      owns: true,
+      error: null,
+    });
   });
 
   it("refuses a figure inside somebody else's project", async () => {
-    expect(await ownsFigure(fakeSupabase(db), 'figure-a', STRANGER)).toBe(false);
+    expect(await ownsFigure(fakeSupabase(db), 'figure-a', STRANGER)).toEqual({
+      owns: false,
+      error: null,
+    });
   });
 
   it('refuses a figure that does not exist', async () => {
-    expect(await ownsFigure(fakeSupabase(db), 'figure-nope', OWNER)).toBe(false);
+    expect(await ownsFigure(fakeSupabase(db), 'figure-nope', OWNER)).toEqual({
+      owns: false,
+      error: null,
+    });
   });
 
   it('refuses an orphaned figure rather than defaulting to allow', async () => {
     const orphan = { projects: db.projects, figures: [{ id: 'figure-orphan' }] };
-    expect(await ownsFigure(fakeSupabase(orphan), 'figure-orphan', OWNER)).toBe(false);
+    expect(await ownsFigure(fakeSupabase(orphan), 'figure-orphan', OWNER)).toEqual({
+      owns: false,
+      error: null,
+    });
+  });
+
+  it('surfaces a figure-query failure instead of silently reporting not-owned', async () => {
+    const result = await ownsFigure(fakeSupabase(db, 'figures'), 'figure-a', OWNER);
+    expect(result.owns).toBe(false);
+    expect(result.error).not.toBeNull();
   });
 });
 

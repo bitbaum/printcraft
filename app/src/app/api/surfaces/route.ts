@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
   const projectId = request.nextUrl.searchParams.get('project_id');
   if (!projectId)
     return NextResponse.json({ success: false, error: 'project_id required' }, { status: 400 });
-  if (!(await ownsProject(supabase, projectId, userId))) {
+  const ownership = await ownsProject(supabase, projectId, userId);
+  if (ownership.error)
+    return NextResponse.json({ success: false, error: ownership.error }, { status: 500 });
+  if (!ownership.owns) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 
@@ -35,7 +38,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!(await ownsProject(supabase, parsed.data.project_id, userId))) {
+  const ownership = await ownsProject(supabase, parsed.data.project_id, userId);
+  if (ownership.error)
+    return NextResponse.json({ success: false, error: ownership.error }, { status: 500 });
+  if (!ownership.owns) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 
