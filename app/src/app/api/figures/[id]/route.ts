@@ -17,7 +17,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       { status: 400 },
     );
   }
-  if (!(await ownsFigure(supabase, id, userId))) {
+  const ownership = await ownsFigure(supabase, id, userId);
+  if (ownership.error)
+    return NextResponse.json({ success: false, error: ownership.error }, { status: 500 });
+  if (!ownership.owns) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 
@@ -36,7 +39,10 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
   const { supabase, userId } = await getApiClient();
 
-  if (!(await ownsFigure(supabase, id, userId))) {
+  const ownership = await ownsFigure(supabase, id, userId);
+  if (ownership.error)
+    return NextResponse.json({ success: false, error: ownership.error }, { status: 500 });
+  if (!ownership.owns) {
     return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
   }
 

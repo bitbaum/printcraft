@@ -15,32 +15,36 @@ import type { getApiClient } from '@/lib/supabase/api-client';
 
 type ApiSupabase = Awaited<ReturnType<typeof getApiClient>>['supabase'];
 
+export type OwnershipResult = { owns: boolean; error: string | null };
+
 export async function ownsProject(
   supabase: ApiSupabase,
   projectId: string,
   userId: string,
-): Promise<boolean> {
-  const { data } = await supabase
+): Promise<OwnershipResult> {
+  const { data, error } = await supabase
     .from('projects')
     .select('id')
     .eq('id', projectId)
     .eq('user_id', userId)
     .maybeSingle();
 
-  return Boolean(data);
+  if (error) return { owns: false, error: error.message };
+  return { owns: Boolean(data), error: null };
 }
 
 export async function ownsFigure(
   supabase: ApiSupabase,
   figureId: string,
   userId: string,
-): Promise<boolean> {
-  const { data } = await supabase
+): Promise<OwnershipResult> {
+  const { data, error } = await supabase
     .from('figures')
     .select('project_id')
     .eq('id', figureId)
     .maybeSingle();
 
-  if (!data?.project_id) return false;
+  if (error) return { owns: false, error: error.message };
+  if (!data?.project_id) return { owns: false, error: null };
   return ownsProject(supabase, data.project_id, userId);
 }
