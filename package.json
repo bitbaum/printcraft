@@ -6,11 +6,12 @@
   },
   "private": true,
   "packageManager": "pnpm@11.25.0",
-  "comment": "The app lives in app/. These root scripts are thin delegations so the gate is legible from the repo root — `cd app && ...` hid the individual gates behind one opaque `verify`, and tooling (and people) reading this file concluded the repo had no lint, typecheck or test at all.",
+  "comment": "The app lives in app/. These root scripts are thin delegations so the gate is legible from the repo root \u2014 `cd app && ...` hid the individual gates behind one opaque `verify`, and tooling (and people) reading this file concluded the repo had no lint, typecheck or test at all. The Python pipeline (printcraft/, tests/) is gated separately: `test:py`, run by CI's \"Python pipeline tests\" step. It is deliberately NOT part of `verify`, because `verify` must run from a bare `pnpm install` and pytest needs a Python env (`pip install -e '.[dev]'`).",
   "scripts": {
     "lint": "pnpm --dir app run lint",
     "typecheck": "pnpm --dir app run typecheck",
     "test": "pnpm --dir app run test",
+    "test:py": "python3 -m pytest -q",
     "verify": "pnpm run format:check && pnpm --dir app run verify",
     "build": "pnpm --dir app run build",
     "dev": "pnpm --dir app run dev",

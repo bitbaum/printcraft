@@ -15,8 +15,14 @@ dependencies = [
     "rich>=13.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
 [project.scripts]
 printcraft = "printcraft.cli:app"
 
 [tool.setuptools.packages.find]
 include = ["printcraft*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
