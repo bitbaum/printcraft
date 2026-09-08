@@ -30,6 +30,15 @@ class Surface:
     name: str
     panels: list[Panel]
     dpi: int = 150
+    # Bleed is a property of the physical print, like dpi: the printer trims to
+    # the panel size and any drift exposes unprinted material, so the artwork
+    # has to extend past the trim line. One definition here, used by every
+    # delivery path — a per-call default drifts from what the shop asked for.
+    bleed_mm: float = 3.0
+
+    def bleed_px(self) -> int:
+        """Bleed in pixels at this surface's dpi."""
+        return int((self.bleed_mm / 10) * (self.dpi / 2.54))
 
     def total_pixels(self) -> tuple[int, int]:
         """Combined width (sum of panels) and max height."""
@@ -88,6 +97,7 @@ class Project:
             name=data["surface"]["name"],
             panels=[Panel(**p) for p in data["surface"]["panels"]],
             dpi=data["surface"].get("dpi", 150),
+            bleed_mm=float(data["surface"].get("bleed_mm", 3.0)),
         )
 
         style = Style(**data["style"])

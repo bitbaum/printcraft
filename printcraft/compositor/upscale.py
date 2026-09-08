@@ -73,6 +73,47 @@ def _upscale_realesrgan(img: Image.Image, target_size: tuple[int, int]) -> Image
     return _upscale_lanczos(img, target_size)
 
 
+def reflect_expand(img: Image.Image, left: int, top: int, right: int, bottom: int) -> Image.Image:
+    """Grow an image by mirroring its own edges outward.
+
+    This is how bleed is produced at an outer boundary, where there is no
+    neighbouring artwork to borrow from: the printer needs ink past the trim
+    line, and mirroring the edge strip is the standard way to invent it without
+    a visible seam. Pure PIL on purpose — `fit_and_pad`'s reflect path needs
+    numpy and silently degrades to black when it is missing, which is exactly
+    the failure mode bleed cannot afford.
+    """
+    if not any((left, top, right, bottom)):
+        return img
+
+    w, h = img.size
+    if left > w or right > w or top > h or bottom > h:
+        raise ValueError(
+            f"Cannot reflect more than the image: asked for "
+            f"l{left} t{top} r{right} b{bottom} from a {w}×{h} image."
+        )
+
+    out = Image.new(img.mode, (w + left + right, h + top + bottom))
+    out.paste(img, (left, top))
+
+    # Sides first, then corners fill from the already-mirrored sides.
+    if left:
+        out.paste(img.crop((0, 0, left, h)).transpose(Image.Transpose.FLIP_LEFT_RIGHT), (0, top))
+    if right:
+        out.paste(
+            img.crop((w - right, 0, w, h)).transpose(Image.Transpose.FLIP_LEFT_RIGHT),
+            (left + w, top),
+        )
+    if top:
+        band = out.crop((0, top, out.size[0], top + top))
+        out.paste(band.transpose(Image.Transpose.FLIP_TOP_BOTTOM), (0, 0))
+    if bottom:
+        band = out.crop((0, top + h - bottom, out.size[0], top + h))
+        out.paste(band.transpose(Image.Transpose.FLIP_TOP_BOTTOM), (0, top + h))
+
+    return out
+
+
 def fit_and_crop(
     img: Image.Image,
     target_size: tuple[int, int],

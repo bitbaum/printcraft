@@ -13,6 +13,7 @@ created: 2026-XX-XX
 surface:
   name: describe-the-surface # e.g. shower-wall-corner, canvas-landscape
   dpi: 150 # 150 min, 200-300 preferred
+  bleed_mm: 3 # ink past the trim line on every panel edge; ask your print shop
   panels:
     - id: main
       width_cm: 100
