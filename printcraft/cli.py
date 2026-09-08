@@ -211,7 +211,13 @@ def deliver_panels_cmd(
     console.print(f"[cyan]Delivering[/cyan] {p.title} (per-panel mode)")
     for pid, src in panel_sources.items():
         console.print(f"  {pid} ← {src}")
-    result = deliver_per_panel(p, panel_sources, format=format, crop_anchor=crop)
+    try:
+        result = deliver_per_panel(p, panel_sources, format=format, crop_anchor=crop)
+    except (ValueError, FileNotFoundError) as err:
+        # These say what the operator got wrong and what to do instead; a raw
+        # traceback buries that. Unexpected exceptions still surface as bugs.
+        console.print(f"[red]✗ {err}[/red]")
+        raise typer.Exit(code=1)
     console.print()
     for note in result.notes:
         console.print(f"  {note}")
@@ -234,7 +240,11 @@ def deliver(
     """
     p = Project.load(path)
     console.print(f"[cyan]Delivering[/cyan] {p.title} — source: [bold]{source}[/bold]")
-    result = deliver_mural(p, source, pad_mode=pad_mode, format=format)
+    try:
+        result = deliver_mural(p, source, pad_mode=pad_mode, format=format)
+    except (ValueError, FileNotFoundError) as err:
+        console.print(f"[red]✗ {err}[/red]")
+        raise typer.Exit(code=1)
     console.print()
     for note in result.notes:
         console.print(f"  {note}")
