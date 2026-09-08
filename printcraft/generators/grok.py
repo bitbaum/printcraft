@@ -28,6 +28,17 @@ GROK_URL = "https://grok.com/"
 DEFAULT_CDP_PORTS = [9222, 9333, 40967]
 
 
+def output_path(output_dir: str | Path, prefix: str, index: int = 0) -> Path:
+    """Where one generated image lands. Index 0 is the primary, the rest are alternates.
+
+    The only definition of this naming — callers ask here instead of rebuilding
+    the pattern, so "does this scene already have an output?" cannot drift from
+    what `generate()` actually writes.
+    """
+    suffix = "" if index == 0 else f"_alt{index}"
+    return Path(output_dir) / f"{prefix}{suffix}.jpg"
+
+
 @dataclass
 class GrokConfig:
     """Configuration for Grok generation."""
@@ -164,8 +175,7 @@ class GrokGenerator:
                 return result
 
             for i, url in enumerate(urls):
-                suffix = "" if i == 0 else f"_alt{i}"
-                path = output_dir / f"{prefix}{suffix}.jpg"
+                path = output_path(output_dir, prefix, i)
                 if self._download_image(url, path):
                     result.outputs.append(path)
 

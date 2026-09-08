@@ -41,6 +41,12 @@ jobs:
           cache: pnpm
           cache-dependency-path: app/pnpm-lock.yaml
 
+      - uses: actions/setup-python@v6
+        with:
+          # pyproject declares requires-python >=3.11; pin the floor so a
+          # newer default runner image cannot quietly change what CI tests on.
+          python-version: '3.11'
+
       - name: Install
         run: pnpm install --frozen-lockfile
 
@@ -49,6 +55,17 @@ jobs:
       # here and locally via `pnpm run verify`. Change the checks in one place.
       - name: Verify
         run: pnpm run verify
+
+      # The Python pipeline is the other half of this repo and the one that
+      # produces the client deliverable, so it gets gated too. It had no tests
+      # and no CI at all until a partly-failed generation round was found
+      # exiting 0. Deliberately NOT folded into `pnpm run verify`: that gate has
+      # to work from a bare `pnpm install`, and these need a Python env.
+      - name: Python pipeline tests
+        working-directory: .
+        run: |
+          python -m pip install --quiet -e '.[dev]'
+          python -m pytest -q
 
       - name: Build
         # Hermetic compile. NEXT_PUBLIC_* are baked at build time and the static
