@@ -79,9 +79,9 @@ def reflect_expand(img: Image.Image, left: int, top: int, right: int, bottom: in
     This is how bleed is produced at an outer boundary, where there is no
     neighbouring artwork to borrow from: the printer needs ink past the trim
     line, and mirroring the edge strip is the standard way to invent it without
-    a visible seam. Pure PIL on purpose — `fit_and_pad`'s reflect path needs
-    numpy and silently degrades to black when it is missing, which is exactly
-    the failure mode bleed cannot afford.
+    a visible seam. Pure PIL on purpose: this package has no numpy dependency,
+    and a padding routine that silently changes what it draws when an optional
+    import is missing is exactly the failure mode print output cannot afford.
     """
     if not any((left, top, right, bottom)):
         return img
@@ -110,6 +110,37 @@ def reflect_expand(img: Image.Image, left: int, top: int, right: int, bottom: in
     if bottom:
         band = out.crop((0, top + h - bottom, out.size[0], top + h))
         out.paste(band.transpose(Image.Transpose.FLIP_TOP_BOTTOM), (0, top + h))
+
+    return out
+
+
+def edge_expand(img: Image.Image, left: int, top: int, right: int, bottom: int) -> Image.Image:
+    """Grow an image by stretching its outermost row/column outward.
+
+    Unlike `reflect_expand` this can fill any distance, because it repeats a
+    single edge pixel rather than mirroring existing content. That makes it the
+    honest fallback when the artwork is too small to mirror — smeared, but
+    never a lie about what the source contained.
+    """
+    if not any((left, top, right, bottom)):
+        return img
+
+    w, h = img.size
+    out = Image.new(img.mode, (w + left + right, h + top + bottom))
+    out.paste(img, (left, top))
+
+    if left:
+        out.paste(img.crop((0, 0, 1, h)).resize((left, h)), (0, top))
+    if right:
+        out.paste(img.crop((w - 1, 0, w, h)).resize((right, h)), (left + w, top))
+    # Full-width bands so the corners come from the already-stretched sides.
+    if top:
+        out.paste(out.crop((0, top, out.size[0], top + 1)).resize((out.size[0], top)), (0, 0))
+    if bottom:
+        out.paste(
+            out.crop((0, top + h - 1, out.size[0], top + h)).resize((out.size[0], bottom)),
+            (0, top + h),
+        )
 
     return out
 
@@ -177,6 +208,10 @@ def fit_and_pad(
 
     Returns:
         PIL Image at exactly target_size.
+
+    Raises:
+        ValueError: for an unknown pad_mode, or when "reflect" is asked to fill
+            more than the artwork can mirror.
     """
     tw, th = target_size
     sw, sh = img.size
@@ -186,28 +221,35 @@ def fit_and_pad(
     nw, nh = int(sw * scale), int(sh * scale)
     scaled = img.resize((nw, nh), Image.Resampling.LANCZOS)
 
-    # Paste onto target canvas
-    if pad_mode in ("reflect", "edge"):
-        # Use numpy for reflect padding if available, else fall back to edge
-        try:
-            import numpy as np
-            arr = np.array(scaled)
-            pad_h = (th - nh) // 2
-            pad_w = (tw - nw) // 2
-            # Pad with reflect or edge
-            mode = "reflect" if pad_mode == "reflect" else "edge"
-            padded = np.pad(
-                arr,
-                ((pad_h, th - nh - pad_h), (pad_w, tw - nw - pad_w), (0, 0)),
-                mode=mode,
-            )
-            return Image.fromarray(padded)
-        except ImportError:
-            pad_mode = "black"
+    pad_l = (tw - nw) // 2
+    pad_r = tw - nw - pad_l
+    pad_t = (th - nh) // 2
+    pad_b = th - nh - pad_t
 
-    # Fallback: solid color pad
-    bg_color = (0, 0, 0) if pad_mode == "black" else (255, 255, 255)
-    canvas = Image.new("RGB", target_size, bg_color)
-    offset = ((tw - nw) // 2, (th - nh) // 2)
-    canvas.paste(scaled, offset)
-    return canvas
+    if pad_mode == "reflect":
+        # Mirroring can only supply as much as the artwork holds. Asking for
+        # more means the source aspect is nowhere near the surface, and the
+        # honest answer is to say so: this used to fall back to solid black
+        # whenever numpy was missing — and numpy was never a declared
+        # dependency — so `deliver` quietly shipped a mural with black bars
+        # where reflected artwork was meant to be, then split those bars into
+        # panel files and called them print-ready.
+        if pad_l > nw or pad_r > nw or pad_t > nh or pad_b > nh:
+            raise ValueError(
+                f"Source {sw}×{sh} is too far from the {tw}×{th} surface aspect to mirror: "
+                f"needs {max(pad_l, pad_r)}×{max(pad_t, pad_b)} px of fill from a {nw}×{nh} "
+                f"scaled image. Use per-panel delivery (`printcraft deliver-panels`), which "
+                f"crops each panel from its own source, or --pad edge to stretch the border."
+            )
+        return reflect_expand(scaled, left=pad_l, top=pad_t, right=pad_r, bottom=pad_b)
+
+    if pad_mode == "edge":
+        return edge_expand(scaled, left=pad_l, top=pad_t, right=pad_r, bottom=pad_b)
+
+    if pad_mode in ("black", "white"):
+        bg_color = (0, 0, 0) if pad_mode == "black" else (255, 255, 255)
+        canvas = Image.new("RGB", target_size, bg_color)
+        canvas.paste(scaled, (pad_l, pad_t))
+        return canvas
+
+    raise ValueError(f"Unknown pad_mode: {pad_mode!r}. Use reflect | edge | black | white.")
