@@ -41,7 +41,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: app/pnpm-lock.yaml
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           # pyproject declares requires-python >=3.11; pin the floor so a
           # newer default runner image cannot quietly change what CI tests on.
