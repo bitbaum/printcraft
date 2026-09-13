@@ -1,7 +1,7 @@
 # CI floor — modelled on bitbaum/fleet templates/ci/ci-npm.yml.
 #
 # NB: the deployed application is `app/`, NOT the repo root. The fleet deploy
-# registry (fleetcrown/scripts/hetzner/apps.conf) pins
+# registry (loki/scripts/hetzner/apps.conf) pins
 #   printcraft|4015|printcraft.orangecat.ch|/home/g/dev/printcraft|app|-
 # i.e. APP_DIR=app, so deploy.sh builds in `app/` and ships `app/.next/standalone`.
 # The root-level Next tree (root `src/`, `next.config.ts`, `package.json`, …) is a
