@@ -1,4 +1,0 @@
-; GIMP 3.0 Script-Fu composite for Duschwand mural
-; Run: gimp -i -b '(gimp-message "start")' -b - < gimp_composite.sf -b '(gimp-quit 0)'
-
-; We'll use a Python approach instead since Script-Fu is limited for this complexity

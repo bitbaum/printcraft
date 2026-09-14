@@ -38,7 +38,6 @@ printcraft/
 │   ├── PROCESS.md        # High-level workflow
 │   └── LEARNINGS.md      # Hard-won findings — READ BEFORE CODING
 ├── templates/project/    # Template for starting a new client
-├── _archive/             # Old scripts, kept for reference
 ├── pyproject.toml
 └── README.md
 ```
