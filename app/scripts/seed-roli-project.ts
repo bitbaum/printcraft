@@ -1,11 +1,11 @@
 /**
  * Seed Roli's Duschwand project with existing images.
- * Run with: npx tsx scripts/seed-roli-project.ts
+ * Run with: SEED_PHOTO_DIR=<folder with real-photos/ and edited/> npx tsx scripts/seed-roli-project.ts
  */
 
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
-import { basename } from 'path';
+import { basename, join } from 'path';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://supabase.orangecat.ch';
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -14,6 +14,23 @@ if (!SERVICE_ROLE_KEY) {
   console.error('Set SUPABASE_SERVICE_ROLE_KEY env var');
   process.exit(1);
 }
+
+// Roli's photos are not in the repo — they are the customer's own files, sitting
+// in whatever folder the person running this seed keeps them in. The absolute
+// path that used to be written here was one laptop's home directory, so the
+// script could only ever run on that machine. The filenames below are the data;
+// the directory is the environment's to say.
+const PHOTO_DIR = process.env.SEED_PHOTO_DIR;
+
+if (!PHOTO_DIR) {
+  console.error(
+    'Set SEED_PHOTO_DIR to the Duschwand photo folder — the one holding real-photos/ and edited/',
+  );
+  process.exit(1);
+}
+
+const originalPhoto = (filename: string) => join(PHOTO_DIR, 'real-photos', filename);
+const styledPhoto = (filename: string) => join(PHOTO_DIR, 'edited', filename);
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 const BUCKET = 'project-files';
@@ -29,48 +46,41 @@ interface FigureDef {
 const FIGURES: FigureDef[] = [
   {
     label: 'Roli + Freundin (B-AP 670)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2026-01-03 at 11.33.267.jpeg',
-    styledPath: '/home/g/Dokumente/Duschwand/edited/bild1-green-bap670.png',
+    originalPath: originalPhoto('WhatsApp Image 2026-01-03 at 11.33.267.jpeg'),
+    styledPath: styledPhoto('bild1-green-bap670.png'),
     zDepth: 5,
   },
   {
     label: 'Gela + Marco (Weiss, Streifen)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2026-01-03 at 11.39.5122.jpeg',
-    styledPath: '/home/g/Dokumente/Duschwand/edited/bild2-white-stripy.png',
+    originalPath: originalPhoto('WhatsApp Image 2026-01-03 at 11.39.5122.jpeg'),
+    styledPath: styledPhoto('bild2-white-stripy.png'),
     zDepth: 3,
   },
   {
     label: 'Roma + Andrea (Teal K-D)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2026-01-03 at 11.33.267.jpeg',
-    styledPath: '/home/g/Dokumente/Duschwand/edited/bild3-teal-kd-black.png',
+    originalPath: originalPhoto('WhatsApp Image 2026-01-03 at 11.33.267.jpeg'),
+    styledPath: styledPhoto('bild3-teal-kd-black.png'),
     zDepth: 2,
   },
   {
     label: 'Andreas + Freundin (AB-N 274, Titanic)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2025-12-21 at 12.31.53.jpeg',
-    styledPath: '/home/g/Dokumente/Duschwand/edited/bild4-blue-abn274.png',
+    originalPath: originalPhoto('WhatsApp Image 2025-12-21 at 12.31.53.jpeg'),
+    styledPath: styledPhoto('bild4-blue-abn274.png'),
     zDepth: 4,
   },
   {
     label: 'Marco (Foilboard + Hund)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2025-12-31 at 10.44.302.jpeg',
+    originalPath: originalPhoto('WhatsApp Image 2025-12-31 at 10.44.302.jpeg'),
     zDepth: 6,
   },
   {
     label: 'Teus (Blue 66568 JETRANGER)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2025-12-31 at 10.14.146.jpeg',
+    originalPath: originalPhoto('WhatsApp Image 2025-12-31 at 10.14.146.jpeg'),
     zDepth: 1,
   },
   {
     label: 'Alberto (Weiss, VW Amphibie)',
-    originalPath:
-      '/home/g/Dokumente/Duschwand/real-photos/WhatsApp Image 2025-12-10 at 09.21.21 (11).jpeg',
+    originalPath: originalPhoto('WhatsApp Image 2025-12-10 at 09.21.21 (11).jpeg'),
     zDepth: 0,
   },
 ];
