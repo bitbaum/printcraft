@@ -20,5 +20,5 @@ Open http://localhost:3000.
   (`supabase.orangecat.ch`), dedicated `printcraft` schema.
 - **Hosting:** self-hosted behind Caddy at `printcraft.orangecat.ch`.
 
-See `CLAUDE.md` for the data model and architecture, and the repository root
+See `AGENTS.md` for the data model and architecture, and the repository root
 `README.md` for the generation pipeline and project layout.
