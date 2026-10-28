@@ -19,7 +19,6 @@ type AuthFormProps = {
     credentials: Credentials,
   ) => Promise<{ error: { message: string } | null }>;
   passwordPlaceholder: string;
-  passwordMinLength?: number;
   submitLabel: string;
   pendingLabel: string;
   /** "Already have an account? Sign in" — prompt, then the link. */
@@ -36,7 +35,6 @@ export function AuthForm({
   subtitle,
   submit,
   passwordPlaceholder,
-  passwordMinLength,
   submitLabel,
   pendingLabel,
   footer,
@@ -104,7 +102,6 @@ export function AuthForm({
                 onChange={(e) => setPassword(e.target.value)}
                 className="h-12 text-base bg-transparent border-white/[0.08] input-focus-glow transition-all duration-200"
                 placeholder={passwordPlaceholder}
-                minLength={passwordMinLength}
                 required
               />
             </div>
