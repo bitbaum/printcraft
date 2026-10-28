@@ -1,7 +1,7 @@
 /**
  * Surface geometry is the constraint this product says it cannot relax.
  *
- * CLAUDE.md, design principle 6: "Dead zones are sacred. The system physically
+ * AGENTS.md, design principle 6: "Dead zones are sacred. The system physically
  * prevents placing a face on a seam line. This isn't a suggestion — it's a
  * constraint." Red flag 6: "A face split by a glass seam ruins the entire
  * artwork. This is not optional."
