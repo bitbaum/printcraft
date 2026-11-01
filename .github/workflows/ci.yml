@@ -39,7 +39,9 @@ jobs:
           # .nvmrc = the version deploy.sh actually builds the standalone bundle on.
           node-version-file: .nvmrc
           cache: pnpm
-          cache-dependency-path: app/pnpm-lock.yaml
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            app/pnpm-lock.yaml
 
       - uses: actions/setup-python@v7
         with:
@@ -50,10 +52,19 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # SSOT: "verified" is defined ONCE, in app/package.json `verify`
-      # (= lint + typecheck + test), and run identically
-      # here and locally via `pnpm run verify`. Change the checks in one place.
+      # The root holds only prettier, for the root `format:check`.
+      - name: Install (root)
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      # SSOT: "verified" is defined ONCE, in the root package.json `verify`
+      # (= root format:check + app/package.json `verify`, which is lint +
+      # typecheck + test), and run identically here and locally via
+      # `pnpm run verify` at the root. CI used to run only the app's verify, so
+      # the root format:check broke on main (app/pnpm-workspace.yaml) and
+      # nothing noticed. Change the checks in one place.
       - name: Verify
+        working-directory: .
         run: pnpm run verify
 
       # The Python pipeline is the other half of this repo and the one that
