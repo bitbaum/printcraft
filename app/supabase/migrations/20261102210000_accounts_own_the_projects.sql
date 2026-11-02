@@ -1,0 +1,11 @@
+-- PrintCraft's people now come from its own accounts (AccountKit, in the host
+-- accounts database), no longer from OrangeCat's GoTrue. projects.user_id
+-- stays the person's id: everyone who had a project keeps their old GoTrue id
+-- as their AccountKit id (scripts/db/accountkit-import.sql), and a person who
+-- signs up now gets a new uuid that is in no auth.users row. The foreign key
+-- to auth.users would refuse their first project, so it goes. Nothing is
+-- deleted: the column, its values and its index stay.
+--
+-- Rollback: revert the pull request. Re-adding the key needs every user_id to
+-- be in auth.users again, so it is not re-added automatically.
+alter table printcraft.projects drop constraint if exists projects_user_id_fkey;

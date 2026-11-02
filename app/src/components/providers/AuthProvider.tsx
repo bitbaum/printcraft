@@ -1,11 +1,12 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { createContext, useContext, type ReactNode } from 'react';
+import { authClient } from '@/lib/auth/client';
+
+export type AuthUser = { id: string; email: string; name: string };
 
 interface AuthContext {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
 }
 
@@ -15,26 +16,13 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
+/** Who is signed in, from AccountKit's session (/api/auth/get-session). */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [supabase] = useState(() => createClient());
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
-  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
+  const { data, isPending } = authClient.useSession();
+  const user = data?.user
+    ? { id: data.user.id, email: data.user.email, name: data.user.name }
+    : null;
+  return (
+    <AuthContext.Provider value={{ user, loading: isPending }}>{children}</AuthContext.Provider>
+  );
 }
