@@ -2,7 +2,7 @@
 /**
  * Every way into a PrintCraft account, in a real Chromium against the production
  * build and a PostgreSQL built from the committed migrations
- * (.github/workflows/accounts.yml, run from app/):
+ * (.github/workflows/browser-smoke.yml, run from app/):
  *
  *   - the sign-in and sign-up pages at 320px and 390px: no sideways scroll,
  *     and the method set the env asks for (password, passkey, email link,
