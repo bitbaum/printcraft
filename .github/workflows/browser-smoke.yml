@@ -1,4 +1,4 @@
-name: Accounts
+name: Browser smoke
 
 # Every way into a PrintCraft account, in a real Chromium against the
 # production build and a throwaway PostgreSQL built from the committed
@@ -19,7 +19,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: accounts-${{ github.ref }}
+  group: browser-smoke-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
