@@ -191,7 +191,7 @@ User uploads photos → Face extraction + preservation → Style transfer (per-f
 - **Framework:** Next.js 16 (App Router) + TypeScript strict
 - **Database:** PostgreSQL (Supabase) — projects, figures, compositions, exports
 - **Storage:** Supabase Storage — uploaded photos, generated images, exports
-- **Auth:** Supabase Auth (email + magic link, no social login at MVP)
+- **Auth:** `@bitbaum/accountkit` (email + password, emailed link, passkey, second factor, recovery, Continue with OrangeCat, the shared sign-in), tables in a host accounts database; see `app/README.md`
 - **UI:** Tailwind CSS + shadcn/ui
 - **Canvas:** Konva.js (react-konva) — drag-and-drop composition editor
 - **3D Preview:** Three.js — surface mockup visualization

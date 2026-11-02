@@ -7,6 +7,9 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 
+minimumReleaseAgeExclude:
+  - '@bitbaum/accountkit@0.23.1'
+
 # Transitive advisories with no direct dependency to bump, so Dependabot never
 # opens a PR for them (all of this app's alerts were against pnpm-lock.yaml).
 # Each pin is the advisory's own first_patched_version, bounded to the line a

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { authClient } from '@/lib/auth/client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -19,7 +19,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const supabase = createClient();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -54,10 +53,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [mobileMenuOpen]);
 
   async function handleLogout() {
-    await supabase.auth.signOut();
+    await authClient.signOut();
     router.push('/login');
     router.refresh();
   }
+
+  // A person with no name yet is shown by their address, unless it is the
+  // `.invalid` placeholder an OrangeCat sign-in carries.
+  const shownName = user
+    ? user.name || (user.email.endsWith('.invalid') ? 'Account' : user.email.split('@')[0])
+    : '';
 
   return (
     <div className="flex flex-col min-h-full">
@@ -106,17 +111,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             {user ? (
               <div className="hidden md:flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04]">
+                <Link
+                  href="/account"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] transition-colors"
+                >
                   <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
                     <User className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <span className="text-sm text-muted-foreground max-w-32 truncate">
-                    {user.email?.split('@')[0]}
+                    {shownName}
                   </span>
-                </div>
+                </Link>
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label="Sign out"
                   className="text-muted-foreground hover:text-foreground rounded-full h-8 w-8 p-0"
                   onClick={handleLogout}
                 >
@@ -186,12 +195,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {user ? (
             <>
-              <div className="flex items-center gap-3 px-6 py-4 text-muted-foreground">
+              <Link
+                href="/account"
+                className="flex items-center gap-3 px-6 py-4 text-muted-foreground hover:text-foreground"
+              >
                 <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                   <User className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-base">{user.email?.split('@')[0]}</span>
-              </div>
+                <span className="text-base">{shownName}</span>
+              </Link>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

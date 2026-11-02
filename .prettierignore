@@ -25,3 +25,6 @@ yarn.lock
 # errors out on them — root `verify` was broken on main because of this
 # (CI only gates app/, so it never noticed).
 projects/
+
+# drizzle-kit writes these; regenerating them must not produce a formatting diff.
+app/drizzle/meta/

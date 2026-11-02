@@ -1,21 +1,17 @@
-import { createClient } from './server';
+import { headers } from 'next/headers';
+import { sessionFor } from '@/lib/auth';
 import { createAdminClient, GUEST_USER_ID } from './admin';
 
 /**
- * Get a Supabase client and user ID for API routes.
- * If authenticated, uses the user's client (RLS-scoped).
- * If not authenticated, uses the admin client with a guest user ID (bypasses RLS).
+ * A Supabase client and the caller's user id, for API routes.
+ *
+ * Who the caller is comes from AccountKit's session (src/lib/auth). The data
+ * stays in the `printcraft` supabase schema and is always read through the
+ * service-role client, which bypasses row-level security, so every route asks
+ * src/lib/api/ownership.ts whether this user may touch the row. A caller who
+ * is not signed in is the shared guest, as before.
  */
 export async function getApiClient() {
-  const userClient = await createClient();
-  const {
-    data: { user },
-  } = await userClient.auth.getUser();
-
-  if (user) {
-    return { supabase: userClient, userId: user.id };
-  }
-
-  // No auth — use admin client with guest ID
-  return { supabase: createAdminClient(), userId: GUEST_USER_ID };
+  const session = await sessionFor(await headers()).catch(() => null);
+  return { supabase: createAdminClient(), userId: session?.user.id ?? GUEST_USER_ID };
 }

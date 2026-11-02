@@ -1,0 +1,100 @@
+name: Accounts
+
+# Every way into a PrintCraft account, in a real Chromium against the
+# production build and a throwaway PostgreSQL built from the committed
+# accounts migration (app/drizzle), with the import rehearsed on it first
+# (scripts/db/accountkit-import.sql, rolled back). The journey
+# (app/scripts/ci/account-journey.mjs): the method set on /login and
+# /register at 320px and 390px; sign up, sign out, a wrong password refused,
+# sign in; a reset through the mailed link; an emailed sign-in link; passkeys
+# and the second factor on /account. Mail is AccountKit's real mail, caught by
+# app/scripts/ci/mail-sink.cjs. Synthetic people only; the client values below
+# exist only so their buttons render, and the Supabase values only so the
+# build has an address: no project data is read here.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: accounts-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: printcraft_journey
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U app -d printcraft_journey"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://app:app@127.0.0.1:5432/printcraft_journey
+      BETTER_AUTH_SECRET: synthetic-printcraft-journey-secret-32chars
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://supabase.example.test
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon
+      SUPABASE_SERVICE_ROLE_KEY: ci-service
+      NEXT_TELEMETRY_DISABLED: '1'
+      BASE_URL: http://localhost:3000
+      MAIL_SINK: /tmp/printcraft-ci-mail.jsonl
+      RESEND_API_KEY: re_ci_sink_only
+      RESEND_FROM: PrintCraft <hello@printcraft.orangecat.ch>
+      ORANGECAT_OAUTH_CLIENT_ID: printcraft-ci
+      ORANGECAT_OAUTH_CLIENT_SECRET: ci-only
+      SIGNIN_ISSUER: https://morulia.orangecat.ch
+      SIGNIN_CLIENT_ID: printcraft-ci
+      SIGNIN_CLIENT_SECRET: ci-only
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Accounts migration, then the import rehearsed (rolled back)
+        run: |
+          for f in drizzle/[0-9]*.sql; do sed 's/--> statement-breakpoint//' "$f" | psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -X; done
+          {
+            echo "BEGIN;"
+            echo "CREATE TEMP TABLE oc_people (user_id uuid PRIMARY KEY, actor_id text) ON COMMIT DROP;"
+            echo "INSERT INTO oc_people VALUES ('0b5e2a1c-1111-4111-8111-000000000001', '7c9d8e6f-2222-4222-8222-000000000002'), ('0b5e2a1c-1111-4111-8111-000000000003', NULL);"
+            cat ../scripts/db/accountkit-import.sql
+            echo "ROLLBACK;"
+          } | psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -X -tA -F ' '
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+      - name: Account journey
+        run: |
+          mkdir -p account-journey
+          NODE_OPTIONS="--require ./scripts/ci/mail-sink.cjs" pnpm exec next start -p 3000 > next.log 2>&1 &
+          for i in $(seq 60); do curl -sf -o /dev/null http://localhost:3000/login && break; sleep 1; done
+          node scripts/ci/account-journey.mjs
+      - name: Keep screenshots and the server log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: printcraft-account-journey
+          path: |
+            app/account-journey/
+            app/next.log
+          retention-days: 14
+          if-no-files-found: warn

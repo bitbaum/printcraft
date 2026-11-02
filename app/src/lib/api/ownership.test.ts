@@ -129,7 +129,9 @@ describe('every API route authorizes its caller', () => {
     });
   }
 
-  const files = routeFiles(apiDir);
+  // The account routes (AccountKit's handler) touch no project data; who the
+  // caller is, they decide.
+  const files = routeFiles(apiDir).filter((f) => !f.includes(join('api', 'auth')));
 
   it('finds the route files', () => {
     expect(files.length).toBeGreaterThan(0);
