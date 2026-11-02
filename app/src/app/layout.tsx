@@ -1,20 +1,11 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import './globals.css';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+// Geist and Geist Mono ship in @bitbaum/design-tokens; ./fonts is generated from it.
+import { geistMono, geistSans } from './fonts';
 
 export const metadata: Metadata = {
   title: 'PrintCraft — Scene Composer for Physical Art',
