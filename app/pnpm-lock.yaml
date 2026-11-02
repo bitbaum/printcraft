@@ -38,6 +38,9 @@ importers:
       '@bitbaum/accountkit':
         specifier: ^0.23.1
         version: 0.23.1(9d8297f61d68ff11f15dde980566b556)
+      '@bitbaum/design-tokens':
+        specifier: ^1.3.1
+        version: 1.3.1
       '@bitbaum/mail-kit':
         specifier: ^0.2.0
         version: 0.2.0
@@ -479,6 +482,11 @@ packages:
         optional: true
       next:
         optional: true
+
+  '@bitbaum/design-tokens@1.3.1':
+    resolution: {integrity: sha512-oDy7ZOy1L0SBUc5E8PZefLB+dmwSZLfhK2AeuJzyn+e4CotpopulH9vmVOJ/NZaSTsQ7dWP2gBlP/ayFCBunzg==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@bitbaum/mail-kit@0.2.0':
     resolution: {integrity: sha512-YkgMFRQ6HuzIB0q/Ao4FB4zb/YxVc0iKyVdRkFe2psJ4CQJvGxBfDlURomZMkgQfpBQox4QiT/iN9IGRz6SeTg==}
@@ -4954,6 +4962,8 @@ snapshots:
       better-auth: 1.7.15(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1))(next@16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.23.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.11(@types/node@20.19.37)(msw@2.12.14(@types/node@20.19.37)(typescript@5.9.3))(vite@7.3.7(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.23.15)))
       drizzle-orm: 0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1)
       next: 16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+
+  '@bitbaum/design-tokens@1.3.1': {}
 
   '@bitbaum/mail-kit@0.2.0': {}
 
