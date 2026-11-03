@@ -31,9 +31,22 @@ const EMAIL = `journey-${run}@example.test`;
 const PASSWORD = `synthetic journey password ${run}`;
 const NEW_PASSWORD = `synthetic reset password ${run}`;
 
+/** How many providers the shared sign-in (SIGNIN_ISSUER) publishes; 0 when it cannot be read. */
+async function publishedProviders() {
+  if (!process.env.SIGNIN_ISSUER) return 0;
+  try {
+    const r = await fetch(`${process.env.SIGNIN_ISSUER.replace(/\/$/, '')}/api/providers`);
+    const { providers } = await r.json();
+    return Array.isArray(providers) ? providers.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 const EXPECT = {
   orangecat: Boolean(process.env.ORANGECAT_OAUTH_CLIENT_ID),
-  signin: Boolean(process.env.SIGNIN_CLIENT_ID),
+  // AccountKit (0.24+) shows the shared sign-in only once Morulia publishes a provider.
+  signin: Boolean(process.env.SIGNIN_CLIENT_ID) && (await publishedProviders()) > 0,
   mail: Boolean(SINK),
 };
 
@@ -47,7 +60,11 @@ const shot = (page, name) =>
 const session = (page) =>
   page.evaluate(async () => (await (await fetch('/api/auth/get-session')).json())?.user ?? null);
 const pathOf = (page) => new URL(page.url()).pathname;
-const button = (page, name) => page.getByRole('button', { name, exact: true });
+const button = (page, name) =>
+  page.getByRole('button', name instanceof RegExp ? { name } : { name, exact: true });
+// The shared sign-in's button names the providers Morulia publishes, so its
+// words change with Morulia; it always starts the same way.
+const SHARED_SIGNIN = /^Continue with Google\b/;
 
 /** The newest link to `route` in a message to `to`, from the mail sink. */
 async function mailedLink(to, route) {
@@ -124,14 +141,14 @@ try {
     ['Email me a sign-in link instead', EXPECT.mail],
     ['Forgot your password?', EXPECT.mail],
     ['Continue with OrangeCat', EXPECT.orangecat],
-    ['Continue with Google, Apple, GitHub, X or Facebook', EXPECT.signin],
+    [SHARED_SIGNIN, EXPECT.signin],
   ]);
   await shot(page, 'login-methods');
   await offered('/register', [
     ['Create an account', true],
     ['Email me a link instead', EXPECT.mail],
     ['Continue with OrangeCat', EXPECT.orangecat],
-    ['Continue with Google, Apple, GitHub, X or Facebook', EXPECT.signin],
+    [SHARED_SIGNIN, EXPECT.signin],
   ]);
 
   // ── Sign up through AccountKit's form ──────────────────────────────────
