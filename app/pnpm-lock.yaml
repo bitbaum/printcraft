@@ -39,8 +39,8 @@ importers:
         specifier: ^0.27.0
         version: 0.27.0(9d8297f61d68ff11f15dde980566b556)
       '@bitbaum/design-tokens':
-        specifier: ^1.5.1
-        version: 1.5.1
+        specifier: ^1.5.2
+        version: 1.5.2
       '@bitbaum/mail-kit':
         specifier: ^0.2.0
         version: 0.2.0
@@ -483,8 +483,8 @@ packages:
       next:
         optional: true
 
-  '@bitbaum/design-tokens@1.5.1':
-    resolution: {integrity: sha512-yFVbzG0mMxUogvA8MLnvTxuH+mqxGYLeMvwdyJEXLJt3+2IZb+j/zdZ42Rz0Xe5cYuWga60SNVPGZxuF8T1dew==}
+  '@bitbaum/design-tokens@1.5.2':
+    resolution: {integrity: sha512-ScF091XRs5ph109PkRgI3t5w3eersltlJUGea64MPItqXaT5asXM2x3Gj4t6THuFGojZ2pvMLAtuOc3DTmCoTg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4976,7 +4976,7 @@ snapshots:
       drizzle-orm: 0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1)
       next: 16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
 
-  '@bitbaum/design-tokens@1.5.1': {}
+  '@bitbaum/design-tokens@1.5.2': {}
 
   '@bitbaum/mail-kit@0.2.0': {}
 
