@@ -36,14 +36,14 @@ importers:
         specifier: ^1.7.15
         version: 1.7.15(@better-auth/core@1.7.15(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.4(zod@4.6.7))(jose@6.2.14)(kysely@0.29.8)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.15(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1))(next@16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.23.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.11(@types/node@20.19.37)(msw@2.12.14(@types/node@20.19.37)(typescript@5.9.3))(vite@7.3.7(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.23.15))))(better-call@1.4.4(zod@4.6.7))(nanostores@1.5.5)
       '@bitbaum/accountkit':
-        specifier: ^0.27.0
-        version: 0.27.0(fc1627504061e7045f16e32f02529a03)
+        specifier: ^0.30.0
+        version: 0.30.0(2591044828ba8d147569abf045c96aca)
       '@bitbaum/design-tokens':
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^1.7.1
+        version: 1.7.1
       '@bitbaum/mail-kit':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.72.0(react@19.2.4))
@@ -460,13 +460,13 @@ packages:
   '@better-fetch/fetch@1.3.3':
     resolution: {integrity: sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg==}
 
-  '@bitbaum/accountkit@0.27.0':
-    resolution: {integrity: sha512-5dBGE8va8x6qnZGKTGDPu72w9b3/MqTGZG+BpsynQ05MF1FsEcN3EkYNXQhZshpjW139qyG9CTym/jFLVP8ilA==}
+  '@bitbaum/accountkit@0.30.0':
+    resolution: {integrity: sha512-SawXRyluBDhOomI0Z0AQFyeZK4ZGyfUmGstkfS3iciRa2OAPNpwukV7If7H2ftNkkG0PsuTC/weY54BtCkf9NQ==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
       '@better-auth/passkey': ^1.7.10
-      '@bitbaum/mail-kit': ^0.2.0
+      '@bitbaum/mail-kit': ^0.2.0 || ^0.3.0 || ^0.4.0
       better-auth: ^1.7.10
       drizzle-orm: ^0.45.4
       next: ^16.4.0
@@ -483,14 +483,19 @@ packages:
       next:
         optional: true
 
-  '@bitbaum/design-tokens@1.5.2':
-    resolution: {integrity: sha512-ScF091XRs5ph109PkRgI3t5w3eersltlJUGea64MPItqXaT5asXM2x3Gj4t6THuFGojZ2pvMLAtuOc3DTmCoTg==}
+  '@bitbaum/design-tokens@1.7.1':
+    resolution: {integrity: sha512-ejJOZyaN043LTTXkokpCR8kwU6wBt4SNxepUY0cnFX/1ilZRdZwkxnB+vlSlz75DtrMc1pF3KjyOt8C3o5rIqA==}
     engines: {node: '>=20'}
     hasBin: true
 
-  '@bitbaum/mail-kit@0.3.0':
-    resolution: {integrity: sha512-ULeLkCY7m9gN1TduT4x3a6PV5MI9oyHJvh0ZKJoUEBI05xVXdvssHGcIDOrXFpCFFB5s2sXBYXuDQFZgYacfPA==}
+  '@bitbaum/mail-kit@0.4.0':
+    resolution: {integrity: sha512-2v44Etn6iToxQfwspoQS9cURRlqHjEo5stpmip0Fe/c6ObgzHoP4eTP1sG0pXv2FGEYkQ+X8KrJqwNj1tuUonA==}
     engines: {node: '>=20'}
+    peerDependencies:
+      nodemailer: '>=6.9.0'
+    peerDependenciesMeta:
+      nodemailer:
+        optional: true
 
   '@dotenvx/dotenvx@1.57.2':
     resolution: {integrity: sha512-lv9+UZPnl/KOvShepevLWm3+/wc1It5kgO5Q580evnvOFMZcgKVEYFwxlL7Ohl9my1yjTsWo28N3PJYUEO8wFQ==}
@@ -4961,7 +4966,7 @@ snapshots:
 
   '@better-fetch/fetch@1.3.3': {}
 
-  '@bitbaum/accountkit@0.27.0(fc1627504061e7045f16e32f02529a03)':
+  '@bitbaum/accountkit@0.30.0(2591044828ba8d147569abf045c96aca)':
     dependencies:
       '@noble/curves': 2.4.0
       '@scure/base': 2.4.0
@@ -4971,14 +4976,14 @@ snapshots:
       zod: 4.6.7
     optionalDependencies:
       '@better-auth/passkey': 1.7.15(@better-auth/core@1.7.15(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.4(zod@4.6.7))(jose@6.2.14)(kysely@0.29.8)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.15(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1))(next@16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.23.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.11(@types/node@20.19.37)(msw@2.12.14(@types/node@20.19.37)(typescript@5.9.3))(vite@7.3.7(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.23.15))))(better-call@1.4.4(zod@4.6.7))(nanostores@1.5.5)
-      '@bitbaum/mail-kit': 0.3.0
+      '@bitbaum/mail-kit': 0.4.0
       better-auth: 1.7.15(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1))(next@16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.23.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.11(@types/node@20.19.37)(msw@2.12.14(@types/node@20.19.37)(typescript@5.9.3))(vite@7.3.7(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.23.15)))
       drizzle-orm: 0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1)
       next: 16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
 
-  '@bitbaum/design-tokens@1.5.2': {}
+  '@bitbaum/design-tokens@1.7.1': {}
 
-  '@bitbaum/mail-kit@0.3.0': {}
+  '@bitbaum/mail-kit@0.4.0': {}
 
   '@dotenvx/dotenvx@1.57.2':
     dependencies:
