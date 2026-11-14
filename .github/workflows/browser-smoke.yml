@@ -90,7 +90,7 @@ jobs:
           node scripts/ci/account-journey.mjs
       - name: Keep screenshots and the server log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: printcraft-account-journey
           path: |
