@@ -36,8 +36,8 @@ importers:
         specifier: ^1.7.15
         version: 1.7.15(@better-auth/core@1.7.15(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.4(zod@4.6.7))(jose@6.2.14)(kysely@0.29.8)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.15(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@electric-sql/pglite@0.5.14)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1))(next@16.4.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@20.19.37)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.23.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.11(@types/node@20.19.37)(msw@2.12.14(@types/node@20.19.37)(typescript@5.9.3))(vite@7.3.7(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.23.15))))(better-call@1.4.4(zod@4.6.7))(nanostores@1.5.5)
       '@bitbaum/accountkit':
-        specifier: ^0.32.0
-        version: 0.32.0(2591044828ba8d147569abf045c96aca)
+        specifier: ^0.32.1
+        version: 0.32.1(2591044828ba8d147569abf045c96aca)
       '@bitbaum/design-tokens':
         specifier: ^1.7.1
         version: 1.7.1
@@ -460,8 +460,8 @@ packages:
   '@better-fetch/fetch@1.3.3':
     resolution: {integrity: sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg==}
 
-  '@bitbaum/accountkit@0.32.0':
-    resolution: {integrity: sha512-rn5cmYsbHyDTdE/dtRVl3nRE+yH3tLVtaMZCcCJeVoqmSDK5F237fe316hvuV7TozT6uNW0xBcY4xNTnKs0GdA==}
+  '@bitbaum/accountkit@0.32.1':
+    resolution: {integrity: sha512-Gr2+gQU9ZszTKDpsGUPpKpjIkIfIzPGNybKhRpyEWvGTpymOrwLAiyKe3TiEvjSDITvLsHKRA3Mye8XM9h7BBg==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -4966,7 +4966,7 @@ snapshots:
 
   '@better-fetch/fetch@1.3.3': {}
 
-  '@bitbaum/accountkit@0.32.0(2591044828ba8d147569abf045c96aca)':
+  '@bitbaum/accountkit@0.32.1(2591044828ba8d147569abf045c96aca)':
     dependencies:
       '@noble/curves': 2.4.0
       '@scure/base': 2.4.0
